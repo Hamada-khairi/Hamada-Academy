@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hamada Khairy — منهجية Access Control Violations</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;700&family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#09060b;--bg2:#0e0912;--bg3:#130e18;--bg4:#1a1220;
+  --border:rgba(140,70,200,0.15);--border2:rgba(140,70,200,0.07);
+  --gold:#c9a063;--gold2:#e2bc7a;--gdim:#8a6a3a;
+  --purple:#a855f7;--purple2:#c084fc;--pdim:#6b3fa0;
+  --cream:#ecdde8;--text:#b8a8c0;--muted:#6b5478;--muted2:#3a2848;
+  --red:#c04a6a;--rdim:rgba(192,74,106,0.12);
+  --teal:#6a7ab8;--tdim:rgba(106,122,184,0.12);
+  --green:#5a8a6a;--grdim:rgba(90,138,106,0.12);
+  --white:#f5eef8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Tajawal','Cairo',sans-serif;font-size:15px;line-height:1.85;direction:rtl;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9998;opacity:.5}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;position:relative;overflow:hidden;padding:0 5vw;gap:2rem}
+.hero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 65% 50%,rgba(168,85,247,.07) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 10% 90%,rgba(201,160,99,.04) 0%,transparent 50%);pointer-events:none}
+.hero-left{position:relative;z-index:2;padding:5rem 0}
+.eyebrow{display:flex;align-items:center;gap:.8rem;margin-bottom:2rem;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.25em;color:var(--pdim);direction:ltr}
+.eyebrow::before{content:'';display:block;width:28px;height:1px;background:var(--pdim)}
+.eyebrow span{color:var(--purple)}
+.hero-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(3rem,5.5vw,5rem);line-height:1.05;color:var(--white)}
+.hero-italic{font-family:'Cormorant Garamond',serif;font-weight:300;font-style:italic;font-size:clamp(3rem,5.5vw,5rem);color:var(--purple);display:block;line-height:1.05;margin-top:.1rem}
+.hero-desc{font-family:'EB Garamond',serif;font-style:italic;font-size:1.05rem;color:var(--muted);max-width:460px;margin:1.8rem 0 2.5rem;line-height:1.75}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-purple{background:var(--purple);color:#fff;font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.2em;padding:.85rem 2rem;border:none;cursor:pointer;text-decoration:none;display:inline-block;transition:background .2s}
+.btn-purple:hover{background:var(--purple2)}
+.btn-outline{background:transparent;color:var(--cream);font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.2em;padding:.85rem 2rem;border:1px solid rgba(168,85,247,.3);cursor:pointer;text-decoration:none;display:inline-block;transition:all .2s}
+.btn-outline:hover{border-color:var(--purple);color:var(--purple)}
+.hero-tag{margin-top:3rem;display:flex;align-items:center;gap:.8rem;font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.2em;color:var(--muted2);direction:ltr}
+.hero-tag::before{content:'';display:block;width:28px;height:1px;background:var(--muted2)}
+.char-wrap{position:relative;width:400px;height:400px;display:flex;align-items:center;justify-content:center}
+.char-wrap::before{content:'';position:absolute;inset:0;border-radius:50%;border:1px solid rgba(168,85,247,.15);box-shadow:0 0 80px rgba(168,85,247,.07),inset 0 0 80px rgba(168,85,247,.04)}
+.char-wrap::after{content:'';position:absolute;inset:18px;border-radius:50%;border:1px solid rgba(168,85,247,.07)}
+.char-img{width:350px;height:350px;object-fit:contain;object-position:top center;position:relative;z-index:2;filter:drop-shadow(0 20px 60px rgba(0,0,0,.85))}
+.char-label{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(9,6,11,.9);border:1px solid rgba(168,85,247,.25);padding:.38rem 1.2rem;font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.2em;color:var(--purple);white-space:nowrap;direction:ltr}
+.char-label::before,.char-label::after{content:'◆';margin:0 .5rem;font-size:.38rem;opacity:.5}
+.hero-right{display:flex;align-items:center;justify-content:center;position:relative;z-index:2}
+
+/* ── NAV ── */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(9,6,11,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 5vw;display:flex;align-items:center;justify-content:space-between;height:54px}
+.nav-brand{font-family:'Cormorant Garamond',serif;font-size:.98rem;color:var(--cream);letter-spacing:.02em}
+.nav-brand em{color:var(--purple);font-style:italic}
+.nav-links{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-link{padding:0 1rem;height:54px;display:flex;align-items:center;font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.12em;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.nav-link:hover{color:var(--purple)}
+.nav-link.active{color:var(--purple);border-bottom-color:var(--purple)}
+
+/* ── LAYOUT ── */
+.container{max-width:1140px;margin:0 auto;padding:0 5vw}
+.section{padding:6rem 0;border-bottom:1px solid var(--border2)}
+.sec-eye{display:flex;align-items:center;gap:.8rem;margin-bottom:1.2rem;font-family:'Cinzel',serif;font-size:.57rem;letter-spacing:.25em;color:var(--pdim);direction:ltr}
+.sec-eye::before{content:'';display:block;width:22px;height:1px;background:var(--pdim)}
+.sec-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,3.8vw,3.2rem);line-height:1.1;color:var(--white)}
+.sec-title em{font-style:italic;color:var(--purple)}
+.sec-desc{font-family:'EB Garamond',serif;font-style:italic;color:var(--muted);font-size:1rem;max-width:600px;margin-top:.8rem;line-height:1.75}
+.ornament{text-align:center;color:var(--pdim);font-size:.65rem;letter-spacing:.5em;margin:2.5rem 0;opacity:.4}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);padding:2rem;position:relative;transition:border-color .3s}
+.card:hover{border-color:rgba(168,85,247,.28)}
+.cp{border-right:2px solid var(--purple)}
+.cg-border{border-right:2px solid var(--gold)}
+.cr{border-right:2px solid var(--red)}
+.ct{border-right:2px solid var(--teal)}
+.cd{border-right:2px solid var(--muted2)}
+.cg-border2{border-right:2px solid var(--green)}
+.clabel{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.18em;color:var(--pdim);margin-bottom:.8rem;direction:ltr}
+.clabel.r{color:var(--red);opacity:.8}
+.clabel.t{color:var(--teal);opacity:.8}
+.clabel.g{color:var(--green);opacity:.8}
+.clabel.gold{color:var(--gdim);opacity:.9}
+.card h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--cream);margin-bottom:.7rem}
+.card p,.card li{color:var(--text);font-size:.9rem;line-height:1.85}
+.card ul{padding-right:1rem}
+.card ul li{margin-bottom:.35rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem}
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.char-wrap{display:none}}
+
+/* ── CHECKLIST ── */
+.cl{list-style:none;padding:0}
+.cl li{display:flex;align-items:flex-start;gap:.8rem;padding:.55rem 0;border-bottom:1px solid var(--border2);color:var(--text);font-size:.88rem;line-height:1.7}
+.cl li:last-child{border-bottom:none}
+.cl li::before{content:'◆';color:var(--pdim);font-size:.42rem;margin-top:.58rem;flex-shrink:0}
+.tg{background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);color:var(--pdim);font-family:'Cinzel',serif;font-size:.5rem;padding:.12rem .5rem;letter-spacing:.08em;flex-shrink:0}
+.tg.r{background:var(--rdim);border-color:rgba(192,74,106,.2);color:var(--red);opacity:.85}
+.tg.g{background:var(--grdim);border-color:rgba(90,138,106,.2);color:var(--green)}
+.tg.gold{background:rgba(201,160,99,.08);border-color:rgba(201,160,99,.2);color:var(--gdim)}
+
+/* ── CODE ── */
+.cb{background:#060308;border:1px solid var(--border);padding:1.6rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:2;overflow-x:auto;direction:ltr;text-align:left}
+.cb-lbl{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;color:var(--pdim);margin-bottom:1rem;opacity:.7;display:block}
+.cb .p{color:var(--purple)} .cb .p2{color:var(--purple2)}
+.cb .g{color:var(--gold)} .cb .t{color:#7ab8c8} .cb .r{color:#c06a8a}
+.cb .m{color:var(--muted)} .cb .w{color:var(--cream)} .cb .y{color:#c8b870}
+.cb .gr{color:#7ab888} .cb .d{color:var(--muted2)}
+
+/* ── SCRIPT BLOCK ── */
+.sb{border:1px solid var(--border);overflow:hidden;background:var(--bg2)}
+.sb-hd{background:rgba(168,85,247,.04);border-bottom:1px solid var(--border);padding:.75rem 1.8rem;display:flex;justify-content:space-between;align-items:center;direction:ltr}
+.sb-type{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--pdim)}
+.sb-time{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted)}
+.sb-body{padding:1.8rem 2rem}
+.sb-body p{color:var(--text);font-size:.94rem;line-height:1.9;margin-bottom:1rem}
+.sb-body p:last-child{margin-bottom:0}
+.hl{color:var(--purple);font-weight:700}
+.hl2{color:#7ab8c8;font-weight:700}
+.hl3{color:var(--gold);font-weight:700}
+.nb{background:rgba(168,85,247,.04);border-right:2px solid var(--pdim);padding:.9rem 1.1rem;color:var(--text);font-size:.88rem;margin:1.1rem 0;font-family:'EB Garamond',serif;font-style:italic}
+.wb{background:rgba(192,74,106,.05);border-right:2px solid var(--red);padding:.9rem 1.1rem;color:var(--text);font-size:.88rem;margin:1.1rem 0;font-family:'EB Garamond',serif;font-style:italic}
+.gb{background:rgba(90,138,106,.05);border-right:2px solid var(--green);padding:.9rem 1.1rem;color:var(--text);font-size:.88rem;margin:1.1rem 0;font-family:'EB Garamond',serif;font-style:italic}
+
+/* ── DECISION TREE ── */
+.dt{background:var(--bg2);border:1px solid var(--border);padding:1.8rem 2rem 1.4rem;overflow-x:auto}
+.dt-lbl{font-family:'Cinzel',serif;font-size:.53rem;letter-spacing:.18em;color:var(--pdim);margin-bottom:1.4rem;direction:ltr}
+.dn{display:inline-block;padding:.3rem .85rem;font-size:.72rem;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.dq{background:rgba(106,122,184,.12);border:1px solid rgba(106,122,184,.3);color:#8ab0d8}
+.dp{background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.28);color:var(--purple)}
+.dy{background:rgba(201,160,99,.1);border:1px solid rgba(201,160,99,.28);color:var(--gold)}
+.dn-no{background:rgba(192,74,106,.08);border:1px solid rgba(192,74,106,.22);color:#c07090}
+.da{background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.13);color:var(--cream)}
+.dw{background:rgba(192,74,106,.05);border:1px solid rgba(192,74,106,.18);color:#c09080}
+.dgr{background:rgba(90,138,106,.08);border:1px solid rgba(90,138,106,.25);color:#7ab888}
+.dr{display:flex;align-items:center;gap:.65rem;margin:.45rem 0;direction:ltr;flex-wrap:wrap}
+.darr{color:var(--muted2);font-family:'JetBrains Mono',monospace;font-size:.72rem}
+.di{margin-left:2rem;border-left:1px solid var(--border);padding-left:1.4rem;margin-top:.4rem}
+
+/* ── NOTE TEMPLATE ── */
+.nt{background:#050208;border:1px solid rgba(168,85,247,.18);padding:1.8rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;line-height:2;direction:ltr;text-align:left}
+.nt .h1{color:var(--purple)} .nt .h2{color:var(--purple2)} .nt .h3{color:#c8a8e8}
+.nt .k{color:#7ab8c8} .nt .v{color:var(--text)} .nt .dm{color:var(--muted)}
+.nt .fl{color:var(--red)} .nt .ok{color:var(--green)} .nt .warn{color:var(--gold)}
+
+/* ── STEPS ── */
+.step{display:flex;gap:1.8rem;margin-bottom:2.2rem;align-items:flex-start}
+.sn{width:44px;height:44px;flex-shrink:0;border:1px solid rgba(168,85,247,.3);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--pdim);position:relative}
+.sn::after{content:'';position:absolute;inset:-1px;background:linear-gradient(135deg,rgba(168,85,247,.05),transparent)}
+.sc h4{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--cream);margin-bottom:.4rem;font-weight:600}
+.sc p{color:var(--text);font-size:.9rem;line-height:1.85}
+.ic{background:rgba(168,85,247,.08);color:var(--pdim);font-family:'JetBrains Mono',monospace;font-size:.72em;padding:.1em .42em;border:1px solid rgba(168,85,247,.15)}
+
+/* ── TABLE ── */
+.dt2{width:100%;border-collapse:collapse;font-size:.83rem}
+.dt2 th{background:rgba(168,85,247,.06);color:var(--pdim);font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.13em;padding:.85rem 1.1rem;text-align:right;border-bottom:1px solid rgba(168,85,247,.2);font-weight:400}
+.dt2 td{padding:.75rem 1.1rem;border-bottom:1px solid var(--border2);color:var(--text);vertical-align:top;line-height:1.7}
+.dt2 tr:hover td{background:rgba(168,85,247,.02)}
+.pb{display:inline-block;border:1px solid rgba(168,85,247,.22);color:var(--pdim);font-family:'Cinzel',serif;font-size:.5rem;padding:.18rem .65rem;letter-spacing:.1em}
+.pb.r{border-color:rgba(192,74,106,.2);color:var(--red);opacity:.8}
+.pb.g{border-color:rgba(90,138,106,.22);color:var(--green)}
+.pb.gold{border-color:rgba(201,160,99,.22);color:var(--gdim)}
+
+/* ── ROLE BADGE ── */
+.role-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .9rem;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.12em;border-radius:1px}
+.rb-admin{background:rgba(192,74,106,.1);border:1px solid rgba(192,74,106,.3);color:#c07090}
+.rb-pm{background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);color:var(--purple)}
+.rb-dev{background:rgba(106,122,184,.1);border:1px solid rgba(106,122,184,.3);color:#8ab0d8}
+.rb-auditor{background:rgba(201,160,99,.1);border:1px solid rgba(201,160,99,.3);color:var(--gdim)}
+.rb-viewer{background:rgba(90,138,106,.1);border:1px solid rgba(90,138,106,.3);color:#7ab888}
+.rb-anon{background:rgba(107,84,120,.1);border:1px solid rgba(107,84,120,.3);color:var(--muted)}
+
+/* ── MATRIX ── */
+.matrix-wrap{overflow-x:auto}
+.matrix{border-collapse:collapse;width:100%;font-family:'JetBrains Mono',monospace;font-size:.7rem}
+.matrix th{background:rgba(168,85,247,.06);color:var(--pdim);font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.12em;padding:.7rem .9rem;border:1px solid var(--border);text-align:center}
+.matrix th.mech-col{text-align:right;direction:rtl;font-family:'Cairo',sans-serif}
+.matrix td{padding:.6rem .9rem;border:1px solid var(--border2);text-align:center;color:var(--text);font-size:.75rem;vertical-align:middle}
+.matrix td.mech-name{text-align:right;direction:rtl;font-family:'Cairo',sans-serif;font-size:.8rem;color:var(--cream);font-weight:600}
+.mx-yes{color:#7ab888;font-weight:700}
+.mx-no{color:#c07090;font-weight:700}
+.mx-partial{color:var(--gold);font-weight:700}
+.mx-q{color:var(--pdim)}
+.matrix tr:hover td{background:rgba(168,85,247,.02)}
+
+/* ── QUIZ ── */
+.qc{background:var(--bg2);border:1px solid var(--border);padding:2rem;margin-bottom:1.5rem}
+.qq{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--cream);margin-bottom:1.4rem;line-height:1.6}
+.qq::before{content:'— ';color:var(--pdim)}
+.qos{display:flex;flex-direction:column;gap:.55rem}
+.qo{display:flex;align-items:flex-start;gap:.9rem;padding:.8rem 1.1rem;border:1px solid var(--border);cursor:pointer;transition:all .2s;font-size:.87rem;color:var(--text)}
+.qo:hover{border-color:rgba(168,85,247,.35);background:rgba(168,85,247,.03)}
+.qo.correct{border-color:rgba(168,85,247,.45);background:rgba(168,85,247,.06);color:var(--purple2)}
+.qo.wrong{border-color:rgba(192,74,106,.28);background:var(--rdim);color:#c08090}
+.ql{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--pdim);flex-shrink:0;line-height:1.4}
+.qe{margin-top:1.1rem;padding:1.1rem;background:rgba(168,85,247,.04);border-right:2px solid var(--pdim);font-family:'EB Garamond',serif;font-style:italic;font-size:.93rem;color:var(--text);display:none;line-height:1.75}
+.qe.show{display:block}
+.qe strong{color:var(--purple);font-style:normal;font-family:'Cairo',sans-serif}
+
+/* ── REVEAL ── */
+.rev{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+.rev.in{opacity:1;transform:none}
+
+/* ── FOOTER ── */
+footer{padding:3.5rem 5vw;border-top:1px solid var(--border);text-align:center}
+footer p{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.18em;color:var(--muted2)}
+.pline{width:55px;height:1px;background:linear-gradient(90deg,transparent,var(--pdim),transparent);margin:1.2rem auto}
+
+/* ── TIMELINE ── */
+.timeline{position:relative;padding-right:2rem}
+.timeline::before{content:'';position:absolute;right:0;top:1.5rem;bottom:1.5rem;width:2px;background:linear-gradient(180deg,var(--purple),var(--teal),var(--gold));opacity:.2}
+.tl-item{display:flex;gap:1.5rem;margin-bottom:2rem;align-items:flex-start}
+.tl-num{width:36px;height:36px;flex-shrink:0;background:var(--bg3);border:1px solid rgba(168,85,247,.3);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.55rem;color:var(--pdim);letter-spacing:.05em;position:relative;z-index:1}
+.tl-content h5{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--cream);margin-bottom:.3rem;font-weight:600}
+.tl-content p{font-size:.87rem;color:var(--text);line-height:1.8}
+
+/* ── COMPARISON TABLE ── */
+.comp-table{width:100%;border-collapse:collapse}
+.comp-table th{background:rgba(168,85,247,.05);font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.15em;color:var(--pdim);padding:.8rem 1rem;border:1px solid var(--border);text-align:right}
+.comp-table td{padding:.7rem 1rem;border:1px solid var(--border2);font-size:.85rem;color:var(--text);vertical-align:top;line-height:1.7}
+.comp-table .idor-col{border-right:2px solid rgba(201,160,99,.3)}
+.comp-table .ac-col{border-left:2px solid rgba(168,85,247,.3)}
+.comp-table tr:hover td{background:rgba(168,85,247,.02)}
+
+        /* BLACK SITE INJECTIONS */
+        body { cursor: none !important; }
+        .cursor-dot { position: fixed; width: 6px; height: 6px; background: var(--purple, #a855f7); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); transition: transform 0.1s; box-shadow: 0 0 10px var(--purple, #a855f7); }
+        .cursor-ring { position: fixed; width: 32px; height: 32px; border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%, -50%); transition: transform 0.25s cubic-bezier(.23, 1, .32, 1), width 0.2s, height 0.2s, border-color 0.2s; }
+        body:has(a:hover) .cursor-ring, body:has(button:hover) .cursor-ring, body:has(.ws-tab:hover) .cursor-ring, body:has(.lab-card:hover) .cursor-ring { width: 48px; height: 48px; border-color: var(--purple, #a855f7); }
+        
+        /* SCANLINE SWEEP */
+        .scanline { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.15), transparent); animation: scan 8s linear infinite; z-index: 9996; pointer-events: none; }
+        @keyframes scan { 0% { top: -2px; opacity: 0; } 5% { opacity: 1; } 95% { opacity: 0.3; } 100% { top: 100vh; opacity: 0; } }
+        
+        /* HEX GRID BACKGROUND */
+        .hex-bg { position: fixed; inset: 0; z-index: 0; background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(168, 85, 247, 0.04) 0%, transparent 60%); overflow: hidden; pointer-events: none; }
+        .hex-bg canvas { position: absolute; inset: 0; opacity: 0.6; pointer-events: none; }
+        
+        /* ADJUST MAIN CONTAINER Z-INDEX SO IT SITS ABOVE HEX BG */
+        .main, .container, .topbar, .lab-view, .lv-topbar, .lv-sidebar, .lv-workspace, .lv-body, .lv-title, .hero { position: relative; z-index: 10; }
+</style>
+</head>
+
+<!-- BLACK SITE INJECTIONS -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="scanline"></div>
+<div class="hex-bg"><canvas id="hexCanvas"></canvas></div>
+
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="eyebrow">BUG BOUNTY <span>·</span> ACCESS CONTROL VIOLATIONS <span>·</span> RBAC</div>
+    <h1 class="hero-title">منهجية صيد</h1>
+    <span class="hero-italic">Access Control.</span>
+    <p class="hero-desc">الـ vulnerability الأعمق والأصعب في اكتشافها — لما المطور ينسى يتحقق من الـ role مش بس من الـ identity.</p>
+    <div class="hero-btns">
+      <a class="btn-purple" href="#s1">ابدأ الدرس →</a>
+      <a class="btn-outline" href="#s15">الـ Cheatsheet</a>
+      <a class="btn-outline" href="https://youtu.be/d3iSB-Apvdw" target="_blank" style="border-color: var(--purple); color: var(--purple); text-shadow: 0 0 8px rgba(168, 85, 247, 0.3);">
+        <span style="font-family: sans-serif; font-size: 0.9rem;">▶</span> شرح الفيديو
+      </a>
+    </div>
+    <div class="hero-tag">TAUGHT BY HAMADA KHAIRY · RBAC · FUNCTION-LEVEL AUTH · BUG BOUNTY</div>
+  </div>
+  <div class="hero-right">
+    <div class="char-wrap">
+      <img src="FastFetch-Hamada.png" alt="Hamada Khairy" class="char-img">
+      <div class="char-label">THE INSTRUCTOR</div>
+    </div>
+  </div>
+</section>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <div class="nav-brand">Hamada Khairy <em>Academy</em></div>
+  <div class="nav-links">
+    <a class="nav-link" href="#video-expl" style="color:var(--purple); border: 1px solid rgba(168, 85, 247, 0.3); padding: 2px 8px; border-radius: 4px; margin-left: 5px;">فيديو الشرح ▶</a>
+    <a class="nav-link active" href="#s1">IDOR vs AC</a>
+    <a class="nav-link" href="#s2">أنواع الـ Violations</a>
+    <a class="nav-link" href="#s3">اختيار البرنامج</a>
+    <a class="nav-link" href="#s4">Role Mapping</a>
+    <a class="nav-link" href="#s5">Environment Map</a>
+    <a class="nav-link" href="#s6">الحسابات</a>
+    <a class="nav-link" href="#s7">Mechanism Inventory</a>
+    <a class="nav-link" href="#s8">CRUD × Role Matrix</a>
+    <a class="nav-link" href="#s9">GraphQL Special</a>
+    <a class="nav-link" href="#s10">Session Token</a>
+    <a class="nav-link" href="#s11">Testing Operations</a>
+    <a class="nav-link" href="#s12">Impact Building</a>
+    <a class="nav-link" href="#s13">Thoughtful Testing</a>
+    <a class="nav-link" href="#s14">Decision Trees</a>
+    <a class="nav-link" href="#s15">Cheatsheet</a>
+    <a class="nav-link" href="#s16">Quiz</a>
+  </div>
+</nav>
+
+<!-- VIDEO EXPLANATION -->
+<section class="section" id="video-expl" style="padding-top: 8rem; border-bottom: 1px solid var(--border2); background: rgba(168, 85, 247, 0.01);">
+  <div class="container">
+    <div class="rev" style="text-align: center; margin-bottom: 3rem;">
+      <div class="sec-eye" style="color: var(--purple);">// 00 — VIDEO OVERVIEW</div>
+      <h2 class="sec-title" style="color: var(--white); margin-bottom: 1rem;">شرح فيديو <em>كامل</em> للمنهجية</h2>
+      <p class="sec-desc" style="max-width: 700px; margin: 0 auto; color: var(--muted);">شاهد شرح الفيديو الكامل لمنهجية الـ Access Control وكيفية اكتشاف الثغرات عملياً.</p>
+    </div>
+    
+    <div class="rev" style="max-width: 850px; margin: 0 auto; background: var(--bg2); border: 1px solid var(--border); padding: 1.5rem; position: relative;">
+      <a href="https://youtu.be/d3iSB-Apvdw" target="_blank" style="display: block; position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; text-decoration: none; border: 1px solid rgba(168, 85, 247, 0.1);">
+        <img src="https://img.youtube.com/vi/d3iSB-Apvdw/maxresdefault.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border: none; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8" alt="Access Control Explanation Video">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 50px; background: rgba(168, 85, 247, 0.9); border-radius: 12px; display: flex; align-items: center; justify-content: center; pointer-events: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+          <div style="width: 0; height: 0; border-style: solid; border-width: 12px 0 12px 20px; border-color: transparent transparent transparent #fff;"></div>
+        </div>
+      </a>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--purple); letter-spacing: 0.1em;">▶ VIDEO RUNTIME: COMPLETE WALKTHROUGH</span>
+        <a href="https://youtu.be/d3iSB-Apvdw" target="_blank" style="color: var(--purple); text-decoration: none; font-size: 0.85rem; font-family: 'Cinzel', serif; letter-spacing: 0.1em; border-bottom: 1px solid var(--purple);">OPEN ON YOUTUBE ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ S1: IDOR VS ACCESS CONTROL ══════ -->
+<section class="section" id="s1" style="padding-top:8rem">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 01 — المبدأ الأساسي</div>
+    <h2 class="sec-title">IDOR <em>vs</em> Access Control — الفرق الحقيقي</h2>
+    <p class="sec-desc">الاتنين بيودوا لنفس النتيجة — بس السبب مختلف تماماً. وفهم الفرق ده هو اللي بيخليك تغطي الـ attack surface كاملة.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="rev" style="overflow-x:auto;margin-bottom:2rem">
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th style="width:20%">الجانب</th>
+          <th class="idor-col" style="color:var(--gdim)">IDOR — Indirect Object Reference</th>
+          <th class="ac-col">Access Control Violation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--pdim);letter-spacing:.08em">الـ Failure</td>
+          <td class="idor-col">التطبيق مش بيتحقق من <strong style="color:var(--cream)">ملكية</strong> الـ object — هل الـ ID ده بتاعك؟</td>
+          <td class="ac-col">التطبيق مش بيتحقق من <strong style="color:var(--cream)">صلاحية</strong> الـ mechanism — هل الـ role بتاعك يسمحلك؟</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--pdim)">السؤال الأساسي</td>
+          <td class="idor-col">هل الـ object ID ده بتاعي؟</td>
+          <td class="ac-col">هل الـ role بتاعي مسموحله يستخدم الـ mechanism ده؟</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--pdim)">نوع الـ Bypass</td>
+          <td class="idor-col">تغيير الـ identifier (ID, UUID, email...)</td>
+          <td class="ac-col">استخدام mechanism مش مفروض يكون متاح لـ role بتاعك</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--pdim)">مثال</td>
+          <td class="idor-col"><span class="ic" style="font-size:.65rem;color:var(--gdim)">GET /order?id=1001 → id=1002</span></td>
+          <td class="ac-col"><span class="ic" style="font-size:.65rem">GET /admin/export-users (as regular user)</span></td>
+        </tr>
+        <tr>
+          <td style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--pdim)">الـ Accounts</td>
+          <td class="idor-col">حسابين بنفس الـ role (A1 و A2)</td>
+          <td class="ac-col">حسابين بـ roles مختلفة (Admin و User)</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--pdim)">الـ Automation</td>
+          <td class="idor-col">صعب — محتاج context + IDs محددة</td>
+          <td class="ac-col">صعب جداً — محتاج معرفة الـ roles وكل mechanism</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--pdim)">الـ CWE</td>
+          <td class="idor-col"><span class="ic" style="font-size:.65rem;color:var(--gdim)">CWE-639</span></td>
+          <td class="ac-col"><span class="ic" style="font-size:.65rem">CWE-284 / CWE-285</span></td>
+        </tr>
+        <tr>
+          <td style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--pdim)">الإصلاح</td>
+          <td class="idor-col">WHERE id=? AND owner_id=current_user</td>
+          <td class="ac-col">IF current_role NOT IN allowed_roles → 403</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sb rev">
+    <div class="sb-hd"><span class="sb-type">// SCRIPT — ليه الفرق ده مهم عملياً؟</span><span class="sb-time">0:00 – 5:00</span></div>
+    <div class="sb-body">
+      <p>كتير من الـ researchers بيخلطوا بين الاتنين وبيفتكروا إنهم بيغطوا كل الـ attack surface. الحقيقة هي إنهم بيضيعوا نص الـ bugs.</p>
+      <p>لو قدرت تغير ID في الـ request وشفت data حد تاني — ده <span class="hl3">IDOR</span>. بس لو كـ regular user وصلت لـ <span class="hl">admin endpoint</span> أو عملت operation مفروضة بس للـ admin — ده <span class="hl">Access Control Violation</span>.</p>
+      <div class="nb">💡 ممكن في نفس الـ application يكون في الاتنين. الـ admin endpoint يكون vulnerable لـ Access Control Violation، وجواه يكون في IDOR. لازم تغطيهم مع بعض مش منفصلين.</div>
+      <p>الـ Access Control Violations هي أصعب من الـ IDOR من ناحية: إنت محتاج تعرف <span class="hl">كل mechanism في التطبيق</span>، <span class="hl">وكل role</span>، <span class="hl">وإيه اللي المفروض كل role يعمله</span>. من غير المعرفة دي، مش هتلاقي حاجة.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S2: TYPES ══════ -->
+<section class="section" id="s2">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 02 — التصنيف الكامل</div>
+    <h2 class="sec-title">أنواع الـ <em>Access Control Violations</em></h2>
+    <p class="sec-desc">مش نوع واحد — في 5 أنواع مختلفة كل واحد ليه methodology مختلفة.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="g2 rev" style="margin-bottom:1.5rem">
+    <div class="card cp">
+      <div class="clabel">TYPE 01 — Unauthenticated → Authenticated</div>
+      <h3>الأبسط — الأكثر شيوعاً</h3>
+      <p style="margin-bottom:1rem">Unauthenticated user يوصل لـ endpoint مفروض يكون مقفول. الـ barrier بين الـ logged-out وlogged-in state.</p>
+      <div class="cb" style="font-size:.68rem">
+<span class="cb-lbl">// EXAMPLE</span>
+<span class="t">GET</span> <span class="w">/api/dashboard/stats</span>
+<span class="m">// No Authorization header</span>
+<span class="p">// Expected: 401 Unauthorized</span>
+<span class="r">// Vulnerable: 200 OK + data leaked</span>
+      </div>
+      <div style="margin-top:.8rem"><span class="role-badge rb-anon">🔓 ANON</span> → <span class="role-badge rb-dev">👤 AUTH USER</span></div>
+    </div>
+    <div class="card cp">
+      <div class="clabel">TYPE 02 — Horizontal Role Escalation</div>
+      <h3>نفس المستوى — permissions مختلفة</h3>
+      <p style="margin-bottom:1rem">User A يعمل operations بتاعة User B — نفس الـ role بس account مختلف. ده بيتداخل مع الـ IDOR في بعض الأحيان.</p>
+      <div class="cb" style="font-size:.68rem">
+<span class="cb-lbl">// EXAMPLE</span>
+<span class="t">POST</span> <span class="w">/api/team/5002/settings</span>
+<span class="m">// Logged in as User 5001</span>
+<span class="p">// Expected: 403 Forbidden</span>
+<span class="r">// Vulnerable: 200 OK — changed team 5002</span>
+      </div>
+      <div style="margin-top:.8rem"><span class="role-badge rb-dev">👤 USER A</span> → <span class="role-badge rb-dev">👤 USER B</span></div>
+    </div>
+  </div>
+  <div class="g2 rev" style="margin-bottom:1.5rem">
+    <div class="card cp">
+      <div class="clabel">TYPE 03 — Vertical Privilege Escalation</div>
+      <h3>أخطر نوع — الـ impact الأعلى</h3>
+      <p style="margin-bottom:1rem">Regular user يوصل لـ Admin functionality. ده هو الـ jackpot في الـ Access Control testing.</p>
+      <div class="cb" style="font-size:.68rem">
+<span class="cb-lbl">// EXAMPLE</span>
+<span class="t">GET</span> <span class="w">/admin/users/export</span>
+<span class="m">// Logged in as regular Developer</span>
+<span class="p">// Expected: 403 Forbidden</span>
+<span class="r">// Vulnerable: 200 OK + all users CSV</span>
+      </div>
+      <div style="margin-top:.8rem"><span class="role-badge rb-dev">👤 DEVELOPER</span> → <span class="role-badge rb-admin">👑 ADMIN PANEL</span></div>
+    </div>
+    <div class="card cp">
+      <div class="clabel">TYPE 04 — Function-Level Access Control</div>
+      <h3>الـ Granular Role Bypass</h3>
+      <p style="margin-bottom:1rem">في الـ application روله معين مسموحله يعمل READ بس مش UPDATE. لو قدر يبعت UPDATE request وينجح — ده function-level violation.</p>
+      <div class="cb" style="font-size:.68rem">
+<span class="cb-lbl">// EXAMPLE — Viewer role tries to UPDATE</span>
+<span class="t">PUT</span> <span class="w">/api/documents/5001</span>
+<span class="m">// Role: Viewer (allowed: read only)</span>
+<span class="p">// Expected: 403 Forbidden</span>
+<span class="r">// Vulnerable: 200 OK — document modified!</span>
+      </div>
+      <div style="margin-top:.8rem"><span class="role-badge rb-viewer">👁 VIEWER</span> → <span class="role-badge rb-pm">✏️ EDITOR</span></div>
+    </div>
+  </div>
+  <div class="card cp rev">
+    <div class="clabel">TYPE 05 — GraphQL Operation-Level Access Control</div>
+    <h3>الـ Modern Challenge — GraphQL Endpoints</h3>
+    <p style="margin-bottom:1rem">كل الـ requests بتروح لـ endpoint واحد: <span class="ic">/graphql</span>. الـ authorization بيتعمل على مستوى الـ operation مش على مستوى الـ URL. ده بيغير كل الـ methodology.</p>
+    <div class="g2" style="margin-top:1rem">
+      <div class="cb" style="font-size:.67rem">
+<span class="cb-lbl">// TRADITIONAL REST — easy to test</span>
+<span class="t">GET</span>    <span class="w">/api/admin/users</span>   <span class="r">← blocked for user</span>
+<span class="t">POST</span>   <span class="w">/api/admin/export</span>  <span class="r">← blocked for user</span>
+<span class="t">DELETE</span> <span class="w">/api/admin/user/5</span> <span class="r">← blocked for user</span>
+<span class="m">// Each endpoint = separate auth check</span>
+      </div>
+      <div class="cb" style="font-size:.67rem">
+<span class="cb-lbl">// GRAPHQL — one endpoint, many operations</span>
+<span class="p">POST</span> <span class="w">/graphql</span>  <span class="m">← ALL requests here</span>
+
+<span class="m">// Operation 1 (allowed for all):</span>
+<span class="p">{"query": "{ getCurrentUser { id } }"}</span>
+
+<span class="m">// Operation 2 (admin only):</span>
+<span class="p">{"query": "mutation { exportUsers { csv } }"}</span>
+<span class="r">// Same URL — different authorization needed!</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb rev" style="margin-top:2rem">
+    <div class="sb-hd"><span class="sb-type">// SCRIPT — ليه الـ Complex Roles هي الـ Goldmine؟</span><span class="sb-time">5:00 – 10:00</span></div>
+    <div class="sb-body">
+      <p>كل ما زادت عدد الـ roles وزادت الـ granularity، زادت فرصتك. لو التطبيق فيه بس <span class="hl">Admin وUser</span> — ده بسيط نسبياً. بس لو فيه <span class="hl">Admin → Team Lead → Developer → Viewer → Auditor → External</span> — ده 6 levels من الـ permissions، وكل level فيها عشرات الـ mechanisms.</p>
+      <p>المطور اللي بيبني الـ system ده مش مسؤول بس عن الـ features — هو لازم يتأكد إن كل mechanism بيتاكد من كل role بالظبط. ده بالإضافة للـ deadlines والـ pressure.</p>
+      <div class="wb">⚠️ "It becomes almost impossible for the developers to accurately implement that across the board." — Arson. لو إنت كـ researcher شغال بمنهجية صح، هتلاقي الـ edge cases دي قبل ما الـ dev team يلاقيها.</div>
+      <p>الـ <span class="hl">Auditor role</span> هو أحسن مثال: مسموحله يقرأ كل حاجة بس مش يعدل أو يحذف. الـ read-only بالنسبة للمطور = permissions كتير + restrictions كتير = كذا فرصة للـ mistake.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S3: PROGRAM SELECTION ══════ -->
+<section class="section" id="s3">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 03 — اختيار الـ Target</div>
+    <h2 class="sec-title">اختيار البرنامج <em>الصح</em> للـ RBAC</h2>
+    <p class="sec-desc">مش كل برنامج مناسب لـ Access Control testing. في معايير خاصة مختلفة عن الـ IDOR.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="g3 rev" style="margin-bottom:2rem">
+    <div class="card cp">
+      <div class="clabel">✦ IDEAL TARGET</div>
+      <ul class="cl">
+        <li><span class="tg">Core</span> Multiple user roles (3+)</li>
+        <li><span class="tg">Core</span> Granular permissions per role</li>
+        <li><span class="tg">Core</span> Collaboration/team features</li>
+        <li><span class="tg">Core</span> Workspace/org concept</li>
+        <li><span class="tg">Core</span> Self-service registration</li>
+        <li><span class="tg g">Bonus</span> Auditor/external role</li>
+        <li><span class="tg g">Bonus</span> Low bounty = less competition</li>
+        <li><span class="tg g">Bonus</span> CMS / SaaS platform</li>
+      </ul>
+    </div>
+    <div class="card cp" style="border-right-color:var(--gold)">
+      <div class="clabel gold">🎯 PERFECT EXAMPLES</div>
+      <ul class="cl">
+        <li>Project management tools (Jira-like)</li>
+        <li>Website hosting platforms (Pantheon)</li>
+        <li>Collaboration SaaS (Notion-like)</li>
+        <li>Cloud dashboards (AWS/GCP programs)</li>
+        <li>CMS platforms (WordPress hosting)</li>
+        <li>Dev tools with team features</li>
+        <li>Bug bounty platforms نفسهم</li>
+        <li>Medical / Government platforms</li>
+      </ul>
+    </div>
+    <div class="card cp" style="border-right-color:var(--red)">
+      <div class="clabel r">❌ AVOID FOR RBAC</div>
+      <ul class="cl">
+        <li>Single-user apps (no teams)</li>
+        <li>Static content sites</li>
+        <li>Apps with only user/admin (2 roles)</li>
+        <li>Programs without authenticated testing</li>
+        <li>Apps without role documentation</li>
+        <li>Extremely simple CRUD apps</li>
+        <li>Games / entertainment apps</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sb rev">
+    <div class="sb-hd"><span class="sb-type">// SCRIPT — لماذا Pantheon كان الاختيار الصح</span><span class="sb-time">10:00 – 18:00</span></div>
+    <div class="sb-body">
+      <p>Arson اختار Pantheon لسببين رئيسيين. الأول هو الـ granular roles: Admin، Team Member، Developer، وUnprivileged. الثاني هو إن الـ bounties منخفضة — $0 لـ P3/P4 — وده بالتحديد هو الـ advantage.</p>
+      <div class="nb">🎯 البرامج بالـ bounties المنخفضة هي أقل في المنافسة. الـ experienced researchers بيتجنبوها. وده بيديك وقت تعمل testing عميق من غير ما تتقلق من duplicates.</div>
+      <p>الحاجة التانية المهمة: Pantheon منصة collaboration — ده بيعني في concept الـ workspace وفيه <span class="hl">multiple users في نفس الـ workspace بـ roles مختلفة</span>. ده بالظبط اللي محتاجه لـ RBAC testing.</p>
+      <p>لما بتلاقي في الـ program documentation جدول بيشرح إيه اللي كل role يقدر يعمله — ده <span class="hl">الـ gift المجاني</span>. إنت بتعرف بالظبط إيه اللي المفروض يتبعت للـ server وإيه اللي المفروض يترفض.</p>
+    </div>
+  </div>
+
+  <div class="rev" style="overflow-x:auto;margin-top:2rem">
+    <table class="dt2">
+      <thead>
+        <tr>
+          <th>معيار التقييم</th>
+          <th>ليه مهم؟</th>
+          <th>كيف تتحقق منه؟</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>عدد الـ roles (3+)</td><td>كل role إضافية = exponential complexity = أكتر bugs</td><td>الـ documentation / signup flow / team settings</td><td><span class="pb">HIGH</span></td></tr>
+        <tr><td>Permission table موجود</td><td>بيديك الـ blueprint بتاع الـ testing</td><td>دور على صفحة pricing أو features comparison</td><td><span class="pb">HIGH</span></td></tr>
+        <tr><td>Workspace/Org concept</td><td>بيعني في multi-tenant isolation = بيزيد الـ attack surface</td><td>دور على "Create team" أو "Invite members"</td><td><span class="pb">CRITICAL</span></td></tr>
+        <tr><td>Self-registration لكل role</td><td>بدونها مش هتقدر تعمل accounts بـ roles مختلفة</td><td>حاول تعمل account مع كل role</td><td><span class="pb r">MUST</span></td></tr>
+        <tr><td>Low bounty ($0-500)</td><td>less competition = أكتر bugs متاحة</td><td>شوف الـ rewards table في الـ program</td><td><span class="pb g">ADVANTAGE</span></td></tr>
+        <tr><td>Auditor/External role</td><td>الـ role ده دايماً complex ومليان edge cases</td><td>دور في الـ role settings على "read-only" أو "auditor"</td><td><span class="pb">BONUS</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S4: ROLE MAPPING ══════ -->
+<section class="section" id="s4">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 04 — فهم الـ Roles</div>
+    <h2 class="sec-title">Role Mapping — <em>قبل ما تبدأ أي testing</em></h2>
+    <p class="sec-desc">لازم تفهم كل role: إيه اللي تقدر تعمله، وأهم من كده — إيه اللي مش المفروض تعمله.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="sb rev">
+    <div class="sb-hd"><span class="sb-type">// SCRIPT — The Role Map is Your Test Plan</span><span class="sb-time">18:00 – 28:00</span></div>
+    <div class="sb-body">
+      <p>أول ما تدخل التطبيق وتلاقي جدول الـ roles، إنت بتشوفه زي الـ <span class="hl">treasure map</span>. كل "NO" في الجدول ده هو target محتمل لـ Access Control violation.</p>
+      <p>مش بس تعرف إيه اللي كل role يقدر يعمله — لازم تفهم <span class="hl">ليه</span> الـ role ده اتعمل. الـ Developer role مثلاً: الـ developer شغله يكتب الكود مش يعمل deployment. لو تقدر تعمل deployment كـ developer — ده impact كبير لأنك ممكن تعمل deploy لـ backdoor.</p>
+      <div class="nb">📋 دور في الـ application على: Settings → Team → Roles / Members → Permissions. كمان pricing pages بتحتوي permission comparison tables كتير.</div>
+    </div>
+  </div>
+
+  <div class="nt rev" style="margin-top:2rem">
+<div style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.18em;color:var(--pdim);margin-bottom:1.1rem">// ROLE MAPPING NOTE TEMPLATE — PANTHEON EXAMPLE</div>
+<span class="h1">## Roles</span>
+
+<span class="h2">### Admin</span>
+<span class="k">Purpose:</span>  <span class="v">Full workspace management</span>
+<span class="k">Can do:</span>   <span class="gr">ALL mechanisms</span>
+<span class="k">Testing:</span>  <span class="dm">← skip (baseline — can do everything)</span>
+<span class="k">Focus on:</span> <span class="warn">mechanisms admin CAN do that others CANNOT</span>
+
+<span class="h2">### Team Member</span>
+<span class="k">Purpose:</span>  <span class="v">DevOps / infrastructure management</span>
+<span class="k">Can do:</span>   <span class="gr">Deploy, test, manage sites, invite users</span>
+<span class="k">CANNOT do:</span> <span class="fl">Delete sites, remove users, create custom upstreams</span>
+<span class="k">Mechanisms to test:</span>
+  <span class="warn">→ DELETE /site/{id}           ← team member should get 403</span>
+  <span class="warn">→ DELETE /workspace/users/{id} ← team member should get 403</span>
+  <span class="warn">→ POST /upstreams/custom       ← team member should get 403</span>
+  <span class="warn">→ GET /workspace/export-csv    ← team member should get 403</span>
+  <span class="warn">→ PUT /users/{id}/role         ← team member should get 403</span>
+
+<span class="h2">### Developer</span>
+<span class="k">Purpose:</span>  <span class="v">Write code only</span>
+<span class="k">Can do:</span>   <span class="gr">Access dashboard, work in environments, create sites</span>
+<span class="k">CANNOT do:</span> <span class="fl">Deploy, test live, manage team, create upstreams</span>
+<span class="k">Mechanisms to test:</span>
+  <span class="warn">→ POST /deploy                ← developer should get 403 ⭐ HIGH IMPACT</span>
+  <span class="warn">→ POST /test-live             ← developer should get 403</span>
+  <span class="warn">→ PUT /workspace/team/manage  ← developer should get 403</span>
+  <span class="warn">→ POST /upstreams/custom      ← developer should get 403</span>
+  <span class="warn">[+ everything team member cannot do]</span>
+
+<span class="h2">### Unprivileged (Unknown Role)</span>
+<span class="k">Purpose:</span>  <span class="v">❓ unclear — possibly read-only external auditor?</span>
+<span class="k">Can do:</span>   <span class="gr">Create sites (only)</span>
+<span class="k">CANNOT do:</span> <span class="fl">Almost everything</span>
+<span class="k">Testing priority:</span> <span class="warn">HIGHEST — most restrictions = most potential violations</span>
+<span class="k">First target:</span> <span class="warn">→ GET /workspace/dashboard ← can they even see this?</span>
+  </div>
+
+  <div class="rev" style="margin-top:2rem;overflow-x:auto">
+    <div class="matrix-wrap">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th class="mech-col">Mechanism</th>
+            <th><span class="role-badge rb-admin" style="font-size:.48rem">ADMIN</span></th>
+            <th><span class="role-badge rb-pm" style="font-size:.48rem">TEAM MEMBER</span></th>
+            <th><span class="role-badge rb-dev" style="font-size:.48rem">DEVELOPER</span></th>
+            <th><span class="role-badge rb-auditor" style="font-size:.48rem">UNPRIVILEGED</span></th>
+            <th style="color:var(--pdim);font-family:'Cinzel',serif;font-size:.5rem">TEST PRIORITY</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="mech-name">View Dashboard</td><td class="mx-yes">✓</td><td class="mx-yes">✓</td><td class="mx-yes">✓</td><td class="mx-q">?</td><td><span class="pb">MEDIUM</span></td></tr>
+          <tr><td class="mech-name">Invite Users</td><td class="mx-yes">✓</td><td class="mx-yes">✓</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td><span class="pb">HIGH</span></td></tr>
+          <tr><td class="mech-name">Remove Users</td><td class="mx-yes">✓</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td><span class="pb r">CRITICAL</span></td></tr>
+          <tr><td class="mech-name">Change User Role</td><td class="mx-yes">✓</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td><span class="pb r">CRITICAL</span></td></tr>
+          <tr><td class="mech-name">Export Members CSV</td><td class="mx-yes">✓</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td><span class="pb">HIGH</span></td></tr>
+          <tr><td class="mech-name">Deploy Live</td><td class="mx-yes">✓</td><td class="mx-yes">✓</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td><span class="pb r">CRITICAL</span></td></tr>
+          <tr><td class="mech-name">Test Live</td><td class="mx-yes">✓</td><td class="mx-yes">✓</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td><span class="pb r">CRITICAL</span></td></tr>
+          <tr><td class="mech-name">Create Custom Upstream</td><td class="mx-yes">✓</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td><span class="pb">HIGH</span></td></tr>
+          <tr><td class="mech-name">Delete Site</td><td class="mx-yes">✓</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td class="mx-no">✗</td><td><span class="pb r">CRITICAL</span></td></tr>
+          <tr><td class="mech-name">Create Site</td><td class="mx-yes">✓</td><td class="mx-yes">✓</td><td class="mx-yes">✓</td><td class="mx-yes">✓</td><td><span class="pb g">SKIP</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p style="font-family:'EB Garamond',serif;font-style:italic;color:var(--muted);font-size:.85rem;margin-top:.8rem">✦ الصفوف اللي فيها ✗ لـ roles متعددة هي الـ targets. كل ✗ = potential Access Control Violation.</p>
+</div>
+</section>
+
+<!-- ══════ S5: ENVIRONMENT MAPPING ══════ -->
+<section class="section" id="s5">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 05 — رسم خريطة البيئة</div>
+    <h2 class="sec-title">Environment Mapping — <em>ابدأ بالصورة الكبيرة</em></h2>
+    <p class="sec-desc">قبل ما تبدأ الـ testing، إنت لازم تفهم التطبيق من الخارج للداخل — زي ما بتقسم العالم لقارات.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="sb rev">
+    <div class="sb-hd"><span class="sb-type">// SCRIPT — كيف تبني Mental Model للتطبيق</span><span class="sb-time">28:00 – 40:00</span></div>
+    <div class="sb-body">
+      <p>الطريقة بتاعت Arson: ابدأ بالـ <span class="hl">Environments</span> (= القارات). كل environment هو تطبيق منفصل ليه الـ mechanisms والـ roles بتاعته. في Pantheon، عندنا Personal Workspace وTeam Workspace.</p>
+      <p>بعدين جوا كل environment، عندنا الـ <span class="hl">Mechanisms</span> (= المدن). كل mechanism هو operation ممكن تعمله في الـ application: deploy، delete، export، إلخ.</p>
+      <div class="nb">🗺️ "It's almost like if you're looking at a picture of the world right, the first thing we want to do is we want to divide the world up into continents." — Arson</div>
+      <p>أهم اكتشاف في الـ Pantheon testing: في الأول ظن إن في بيئتين مختلفتين تماماً. بعد كده اكتشف إنهم نفس الـ application بـ features مختلفة حسب النوع. ده غيّر كل الـ testing approach.</p>
+      <div class="wb">🚨 لو بنيت mental model غلط للتطبيق، هتضيع ساعات في الـ testing على assumptions خاطئة. خد وقتك في الـ exploration phase.</div>
+    </div>
+  </div>
+
+  <div class="nt rev" style="margin-top:2rem">
+<div style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.18em;color:var(--pdim);margin-bottom:1rem">// ENVIRONMENT MAPPING TEMPLATE</div>
+<span class="h1"># [TARGET] — ACCESS CONTROL TESTING</span>
+
+<span class="h2">## Environments</span>
+
+<span class="h3">### Environment 1: Personal Workspace</span>
+<span class="k">Type:</span>        <span class="v">Single-user workspace</span>
+<span class="k">Roles:</span>       <span class="v">Admin only (creator)</span>
+<span class="k">RBAC target:</span> <span class="fl">LOW — no role granularity</span>
+<span class="k">Notes:</span>       <span class="dm">Can CREATE team workspace from here</span>
+              <span class="dm">Has: personal settings, sites, billing</span>
+
+<span class="h3">### Environment 2: Team/Professional Workspace</span>
+<span class="k">Type:</span>        <span class="v">Multi-user collaborative workspace</span>
+<span class="k">Roles:</span>       <span class="gr">Admin, Team Member, Developer, Unprivileged</span>
+<span class="k">RBAC target:</span> <span class="gr">HIGH ⭐ — primary testing environment</span>
+<span class="k">Notes:</span>       <span class="dm">Team workspace name must be unique (slug)</span>
+              <span class="dm">Role granularity documented in permissions table</span>
+              <span class="dm">Most requests go through GraphQL endpoint</span>
+
+<span class="h2">## Key Observations</span>
+1. <span class="warn">[OBS] Personal vs Team = same app, different features (not different apps!)</span>
+2. <span class="warn">[OBS] All major operations go through /graphql endpoint</span>
+3. <span class="warn">[OBS] Additional traditional API found: /api/v1/* (site creation)</span>
+4. <span class="warn">[OBS] Upstreams feature only available in Team workspace</span>
+5. <span class="dm">[?] Does personal workspace user have admin-equivalent role?</span>
+  </div>
+
+  <div class="g2 rev" style="margin-top:2rem">
+    <div class="card cp">
+      <div class="clabel">إزاي تعمل Environment Exploration صح</div>
+      <div class="steps" style="margin-top:1rem">
+        <div class="tl-item">
+          <div class="tl-num">1</div>
+          <div class="tl-content"><h5>اعمل account وافتح Burp</h5><p>Scope = target domain فقط. افتح كل صفحة واعمل كل action وهمي عشان تملي الـ sitemap.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-num">2</div>
+          <div class="tl-content"><h5>ابحث عن "Team" أو "Workspace"</h5><p>أي حاجة بتقول "Invite members"، "Create team"، "Manage roles" — ده هو الـ RBAC entry point.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-num">3</div>
+          <div class="tl-content"><h5>افتح الـ Settings كامل</h5><p>كل section في الـ settings ممكن يحتوي على mechanisms للـ testing. حتى الـ billing وSSH keys.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-num">4</div>
+          <div class="tl-content"><h5>ابحث عن الـ Permission Table</h5><p>في الـ docs، الـ pricing page، أو الـ signup flow. ده هو الـ gold — بيديك الـ test plan مجاناً.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="card cp">
+      <div class="clabel">الحاجات اللي لازم تدوّنها في الـ Notes</div>
+      <ul class="cl">
+        <li><span class="tg">Env</span> كل environment/workspace موجود في التطبيق</li>
+        <li><span class="tg">Roles</span> كل role وlist بالـ permissions الخاصة بها</li>
+        <li><span class="tg">Diff</span> الفروقات بين الـ environments</li>
+        <li><span class="tg r">Bug?</span> أي mechanism غير واضح — هل مسموح بيه ولا لأ؟</li>
+        <li><span class="tg">Q</span> أسئلة محتاج تجاوب عليها أثناء الـ testing</li>
+        <li><span class="tg">Tech</span> الـ tech stack (REST vs GraphQL vs gRPC)</li>
+        <li><span class="tg">Auth</span> كيفية الـ authentication في كل environment</li>
+        <li><span class="tg g">Target</span> أعلى priority mechanisms لاختبارها</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S6: ACCOUNTS SETUP ══════ -->
+<section class="section" id="s6">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 06 — إعداد الحسابات</div>
+    <h2 class="sec-title">حساب لكل <em>Role</em> — مش حسابين بس</h2>
+    <p class="sec-desc">في الـ IDOR عندك حسابين. في الـ RBAC عندك حساب لكل role موجودة في التطبيق.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="steps rev">
+    <div class="step"><div class="sn">I</div><div class="sc"><h4>الـ Workspace Creator = Admin</h4><p>الأول تعمل الـ workspace — إنت أصبحت admin تلقائياً. ده الـ <span class="ic">admin account</span>. من هنا بتدعو الـ roles التانية.</p></div></div>
+    <div class="step"><div class="sn">II</div><div class="sc"><h4>Plus Notation لكل Role</h4><p>استخدم <span class="ic">you+admin@hackerone.com</span>، <span class="ic">you+teammember@</span>، <span class="ic">you+developer@</span>. بدل الأرقام (demo1, demo2) — استخدم اسم الـ role مباشرة. ده بيخليك دايماً عارف إنت شغال بأنهو account.</p></div></div>
+    <div class="step"><div class="sn">III</div><div class="sc"><h4>Activate في Browsers مختلفة</h4><p>Admin في normal Firefox. Team Member في Incognito. Developer في Burp's Browser. لو في role رابعة، استخدم Chrome. الـ goal: كل session منفصلة تماماً.</p></div></div>
+    <div class="step"><div class="sn">IV</div><div class="sc"><h4>وثق Session Tokens كل Role</h4><p>كل account بعد login: افتح Burp → proxy → اعمل أي action → جيب الـ session token من الـ cookies. وثقه في الـ notes مع اسم الـ role بتاعه.</p></div></div>
+    <div class="step"><div class="sn">V</div><div class="sc"><h4>تحدي الـ Incognito Sharing</h4><p>Firefox Incognito windows بتشارك نفس الـ session! الحل: استخدم Burp browser كـ third window — بيعمل session منفصلة تماماً لأنه مستقل عن الـ OS browser.</p></div></div>
+  </div>
+
+  <div class="nt rev" style="margin-top:1.5rem">
+<div style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.18em;color:var(--pdim);margin-bottom:1rem">// ACCOUNTS SECTION — RBAC VERSION</div>
+<span class="h1">## Accounts</span>
+
+<span class="h2">### Admin (Workspace Creator)</span>
+<span class="k">Email:  </span> <span class="v">you+admin@bugcrowd.ninja</span>
+<span class="k">Session:</span> <span class="v">ABC123DEF...</span>   <span class="dm">← get from browser storage or Burp</span>
+<span class="k">Browser:</span> <span class="v">Firefox normal</span>
+<span class="k">Can do: </span> <span class="gr">EVERYTHING — baseline</span>
+
+<span class="h2">### Team Member</span>
+<span class="k">Email:  </span> <span class="v">you+teammember@bugcrowd.ninja</span>
+<span class="k">Session:</span> <span class="v">XYZ789GHI...</span>
+<span class="k">Browser:</span> <span class="v">Firefox Incognito</span>
+<span class="k">Testing:</span> <span class="warn">Can they do what only Admin should do?</span>
+
+<span class="h2">### Developer</span>
+<span class="k">Email:  </span> <span class="v">you+developer@bugcrowd.ninja</span>
+<span class="k">Session:</span> <span class="v">JKL456MNO...</span>
+<span class="k">Browser:</span> <span class="v">Burp Browser</span>
+<span class="k">Testing:</span> <span class="warn">Can they deploy? Can they manage team? Can they export?</span>
+
+<span class="h2">### Unprivileged (if accessible)</span>
+<span class="k">Email:  </span> <span class="v">you+unprivileged@bugcrowd.ninja</span>
+<span class="k">Session:</span> <span class="v">PQR789STU...</span>
+<span class="k">Status: </span> <span class="fl">Note: Server may reject — test client-side vs server-side</span>
+<span class="k">Testing:</span> <span class="warn">HIGHEST PRIORITY — most restrictions = most potential bugs</span>
+  </div>
+
+  <div class="sb rev" style="margin-top:2rem">
+    <div class="sb-hd"><span class="sb-type">// SCRIPT — مشكلة إدارة الـ Roles أثناء الـ Testing</span><span class="sb-time">40:00 – 50:00</span></div>
+    <div class="sb-body">
+      <p>أصعب حاجة في الـ RBAC testing هو إنك تتأكد دايماً إنك شغال بالـ session الصح. Arson ذكر إنه اتفتح على account غلط أكتر من مرة أثناء الـ recording.</p>
+      <div class="nb">👥 الحل الأمثل: اعمل الـ testing مع group من 3-4 persons. كل واحد يأخد role. لما تلاقي mechanism بتقول لـ admin "أنا لقيت إن developer قدر يعمل X — تقدر تعملها؟" ده بيسرع الـ testing ضعف.</div>
+      <p>لو بتعمل solo testing: خلي قاعدة ثابتة — دايماً اعمل screenshot للـ URL والـ session في كل browser قبل ما تبدأ أي test. ده بيمنع الـ confusion.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S7: MECHANISM INVENTORY ══════ -->
+<section class="section" id="s7">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 07 — جرد الـ Mechanisms</div>
+    <h2 class="sec-title">Mechanism Inventory — <em>اعرف كل حاجة ممكن تعملها</em></h2>
+    <p class="sec-desc">قبل ما تبدأ تهاجم، إنت لازم تعمل inventory كامل لكل mechanism في التطبيق.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="sb rev">
+    <div class="sb-hd"><span class="sb-type">// SCRIPT — ليه الـ Inventory ده مش Boring بل ضروري</span><span class="sb-time">50:00 – 60:00</span></div>
+    <div class="sb-body">
+      <p>الـ Mechanism Inventory هو الفرق بين researcher بيلاقي bugs وراسرcher بيلف. إنت بتعمل map كاملة للتطبيق، وبعدين بتهاجم كل نقطة فيها بالترتيب.</p>
+      <p>في Pantheon، الـ inventory بدأ من الـ permission table الموجودة في الـ documentation. بعدين Arson اكتشف mechanisms إضافية من خلال الـ testing نفسه — زي الـ <span class="hl">change user role</span> والـ <span class="hl">export members CSV</span> اللي مش كانوا في الـ original table.</p>
+      <div class="nb">💡 الـ granularity بتيجي من الـ application نفسه. الـ permission table بيقولك "modify user" — بس لما تدخل التطبيق بتلاقي إن في "change role" و"remove user" وده بيزود الـ testing surface بضعف.</div>
+    </div>
+  </div>
+
+  <div class="nt rev" style="margin-top:2rem">
+<div style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.18em;color:var(--pdim);margin-bottom:1rem">// MECHANISM INVENTORY — FULL TEMPLATE</div>
+<span class="h1">## Mechanisms</span>
+
+<span class="h2">### Team Management</span>
+<span class="k">INVITE USER       </span>= <span class="t">POST</span> → <span class="v">/api/workspace/members</span>      <span class="dm">← GraphQL: inviteUser mutation</span>
+<span class="k">REMOVE USER       </span>= <span class="t">DELETE</span> → <span class="v">/api/workspace/members/{id}</span>  <span class="dm">← GraphQL: removeMember mutation</span>
+<span class="k">CHANGE USER ROLE  </span>= <span class="t">PUT</span> → <span class="v">/api/workspace/members/{id}/role</span> <span class="dm">← GraphQL: updateMemberRole ⭐ HIGH VALUE</span>
+<span class="k">EXPORT MEMBERS    </span>= <span class="t">POST</span> → <span class="v">/graphql {triggerWorkspaceExport}</span>  <span class="dm">← Admin ONLY target</span>
+
+<span class="h2">### Site Management</span>
+<span class="k">CREATE SITE       </span>= <span class="t">POST</span> → <span class="v">/api/v1/sites</span>                <span class="dm">← ALL roles — skip</span>
+<span class="k">DELETE SITE       </span>= <span class="t">DELETE</span> → <span class="v">/api/v1/sites/{id}</span>           <span class="dm">← Admin only target ⭐</span>
+<span class="k">DEPLOY LIVE       </span>= <span class="t">POST</span> → <span class="v">/api/v1/sites/{id}/deploy</span>    <span class="dm">← Team Member+ ONLY ⭐⭐ HIGH IMPACT</span>
+<span class="k">TEST LIVE         </span>= <span class="t">POST</span> → <span class="v">/api/v1/sites/{id}/test</span>      <span class="dm">← Team Member+ ONLY</span>
+
+<span class="h2">### Configuration</span>
+<span class="k">CREATE UPSTREAM   </span>= <span class="t">POST</span> → <span class="v">/graphql {createCustomUpstream}</span> <span class="dm">← Admin only target ⭐</span>
+<span class="k">WORKSPACE SETTINGS</span>= <span class="t">GET/PUT</span> → <span class="v">/graphql {workspaceSettings}</span> <span class="dm">← investigate read vs write</span>
+
+<span class="h2">## Testing Queue (Priority Order)</span>
+1. <span class="fl">CRITICAL:</span> <span class="v">triggerWorkspaceExport — test with: TeamMember, Developer</span>
+2. <span class="fl">CRITICAL:</span> <span class="v">deploy + test live — Developer should get 403</span>
+3. <span class="fl">CRITICAL:</span> <span class="v">updateMemberRole — TeamMember + Developer should get 403</span>
+4. <span class="warn">HIGH:</span>     <span class="v">createCustomUpstream — TeamMember + Developer should get 403</span>
+5. <span class="warn">HIGH:</span>     <span class="v">removeMember — TeamMember + Developer should get 403</span>
+6. <span class="dm">MEDIUM:</span>   <span class="v">all READ operations — check with each role</span>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S8: CRUD × ROLE MATRIX ══════ -->
+<section class="section" id="s8">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 08 — CRUD × Role</div>
+    <h2 class="sec-title">CRUD per Role — <em>الـ Matrix الكاملة</em></h2>
+    <p class="sec-desc">كل mechanism بيتقسم لـ CRUD operations — وكل operation ليها authorization requirement مختلف.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="g2 rev" style="margin-bottom:2rem">
+    <div class="card cp">
+      <div class="clabel">ليه الـ CRUD Granularity مهمة في RBAC؟</div>
+      <p style="margin-bottom:1rem">المطور ممكن يتذكر يمنع الـ DELETE لكن ينسى الـ UPDATE. أو يمنع الـ POST لكن ينسى إن الـ PATCH بيعمل نفس الشيء.</p>
+      <div class="cb" style="font-size:.68rem">
+<span class="cb-lbl">// DEVELOPER ROLE — what to test</span>
+<span class="dm">// Allowed:</span>
+<span class="gr">GET  /api/v1/sites        ← list sites (OK)</span>
+<span class="gr">GET  /api/v1/sites/{id}   ← view site (OK)</span>
+
+<span class="dm">// Blocked (should be):</span>
+<span class="r">POST   /api/v1/sites/{id}/deploy  ← 403?</span>
+<span class="r">POST   /api/v1/sites/{id}/test    ← 403?</span>
+<span class="r">PUT    /api/v1/workspace/settings  ← 403?</span>
+<span class="r">DELETE /api/v1/sites/{id}          ← 403?</span>
+<span class="r">PUT    /api/v1/members/{id}/role   ← 403?</span>
+      </div>
+    </div>
+    <div class="card cp">
+      <div class="clabel">الـ HTTP Method Switching Trick</div>
+      <p style="margin-bottom:1rem">بعض الـ servers بيطبق الـ authorization على HTTP method معينة بس. جرب نفس الـ endpoint بـ methods مختلفة.</p>
+      <div class="cb" style="font-size:.68rem">
+<span class="cb-lbl">// METHOD SWITCHING — same endpoint</span>
+<span class="gr">GET /api/v1/users/export     ← 403 (blocked)</span>
+<span class="r">POST /api/v1/users/export    ← 200?? (forgotten)</span>
+<span class="r">PUT /api/v1/users/export     ← 200?? (different code path)</span>
+<span class="r">OPTIONS /api/v1/users/export ← reveals allowed methods</span>
+
+<span class="dm">// Also try:</span>
+<span class="r">GET /api/V1/users/export     ← case sensitivity bypass</span>
+<span class="r">GET /api/v1/users/export/    ← trailing slash bypass</span>
+<span class="r">GET /api/v1/users/export;    ← semicolon bypass</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rev" style="overflow-x:auto">
+    <div class="matrix-wrap">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th class="mech-col">Object / Resource</th>
+            <th>CREATE</th>
+            <th>READ</th>
+            <th>UPDATE</th>
+            <th>DELETE</th>
+            <th style="color:var(--pdim);font-family:'Cinzel',serif;font-size:.48rem">WHO CAN DO ALL?</th>
+            <th style="color:var(--pdim);font-family:'Cinzel',serif;font-size:.48rem">RBAC TEST?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mech-name">Site</td>
+            <td style="color:var(--green);font-size:.65rem">ALL roles</td>
+            <td style="color:var(--green);font-size:.65rem">ALL roles</td>
+            <td class="mx-partial">Admin+TM</td>
+            <td class="mx-partial">Admin only</td>
+            <td><span class="role-badge rb-admin" style="font-size:.45rem">ADMIN</span></td>
+            <td><span class="pb r">YES — DEL</span></td>
+          </tr>
+          <tr>
+            <td class="mech-name">Deployment</td>
+            <td class="mx-partial">Admin+TM</td>
+            <td style="color:var(--green);font-size:.65rem">ALL roles</td>
+            <td class="mx-partial">Admin+TM</td>
+            <td class="mx-partial">Admin+TM</td>
+            <td><span class="role-badge rb-pm" style="font-size:.45rem">TEAM MEMBER</span></td>
+            <td><span class="pb r">YES — ALL</span></td>
+          </tr>
+          <tr>
+            <td class="mech-name">Workspace Member</td>
+            <td class="mx-partial">Admin+TM</td>
+            <td style="color:var(--green);font-size:.65rem">ALL roles</td>
+            <td class="mx-no">Admin only</td>
+            <td class="mx-no">Admin only</td>
+            <td><span class="role-badge rb-admin" style="font-size:.45rem">ADMIN</span></td>
+            <td><span class="pb r">CRITICAL</span></td>
+          </tr>
+          <tr>
+            <td class="mech-name">Member Role</td>
+            <td class="mx-no">N/A</td>
+            <td style="color:var(--green);font-size:.65rem">ALL roles</td>
+            <td class="mx-no">Admin only</td>
+            <td class="mx-no">N/A</td>
+            <td><span class="role-badge rb-admin" style="font-size:.45rem">ADMIN</span></td>
+            <td><span class="pb r">CRITICAL</span></td>
+          </tr>
+          <tr>
+            <td class="mech-name">Custom Upstream</td>
+            <td class="mx-no">Admin only</td>
+            <td class="mx-partial">Admin+TM</td>
+            <td class="mx-no">Admin only</td>
+            <td class="mx-no">Admin only</td>
+            <td><span class="role-badge rb-admin" style="font-size:.45rem">ADMIN</span></td>
+            <td><span class="pb r">YES</span></td>
+          </tr>
+          <tr>
+            <td class="mech-name">Member Export</td>
+            <td class="mx-no">N/A</td>
+            <td class="mx-no">Admin only</td>
+            <td class="mx-no">N/A</td>
+            <td class="mx-no">N/A</td>
+            <td><span class="role-badge rb-admin" style="font-size:.45rem">ADMIN</span></td>
+            <td><span class="pb r">YES — EASY</span></td>
+          </tr>
+          <tr>
+            <td class="mech-name">Workspace Settings</td>
+            <td class="mx-no">N/A</td>
+            <td style="color:var(--green);font-size:.65rem">ALL roles</td>
+            <td class="mx-no">Admin only</td>
+            <td class="mx-no">N/A</td>
+            <td><span class="role-badge rb-admin" style="font-size:.45rem">ADMIN</span></td>
+            <td><span class="pb">MEDIUM</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S9: GRAPHQL SPECIAL ══════ -->
+<section class="section" id="s9">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 09 — التحدي الحديث</div>
+    <h2 class="sec-title">GraphQL — <em>كل الـ Requests في مكان واحد</em></h2>
+    <p class="sec-desc">GraphQL بيغير كل الـ methodology. مفيش endpoints — في operations. والـ authorization بيتعمل على مستوى الـ operation مش الـ URL.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="sb rev">
+    <div class="sb-hd"><span class="sb-type">// SCRIPT — لما تشوف /graphql بدل /api/</span><span class="sb-time">60:00 – 80:00</span></div>
+    <div class="sb-body">
+      <p>في الـ traditional REST: كل endpoint = URL مختلف. في الـ GraphQL: <span class="hl">كل حاجة بتروح لـ /graphql</span>. التطبيق بياخد الـ operation name من الـ body ويحدد إيه اللي هيتعمل.</p>
+      <p>ده بيعني إن الـ Access Control مش بيتطبق على الـ URL — بيتطبق على الـ <span class="hl">operation name</span>. وأحياناً الـ developers بينسوا يضيفوا الـ auth check على بعض الـ operations.</p>
+      <div class="wb">⚠️ "The task was matching these GraphQL operations to the high-level mechanisms that the individual user roles are either supposed to or not supposed to be able to use." — Arson</div>
+      <p>الـ approach في GraphQL: بدل ما تدور على endpoints، بتجمع كل الـ <span class="hl">operation names</span> من الـ Burp sitemap (ابحث عن "operationName")، وبتعملهم test بـ sessions مختلفة.</p>
+    </div>
+  </div>
+
+  <div class="g2 rev" style="margin-top:2rem">
+    <div class="card cp">
+      <div class="clabel">كيف تجمع GraphQL Operations</div>
+      <div class="steps" style="margin-top:1rem">
+        <div class="tl-item">
+          <div class="tl-num">1</div>
+          <div class="tl-content"><h5>Burp Search → "operationName"</h5><p>في الـ proxy tab، افتح search، ابعت <span class="ic">operationName</span> مع auto-scroll. هيطلعلك كل operation جت من التطبيق.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-num">2</div>
+          <div class="tl-content"><h5>انقل لـ Repeater</h5><p>كل operation مهمة: send to Repeater وسميها باسم الـ operation (مش "Request 1"). ده بيساعدك لما تيجي تعمل test بالـ roles المختلفة.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-num">3</div>
+          <div class="tl-content"><h5>Introspection Query</h5><p>ابعت <span class="ic">{"query": "{ __schema { mutationType { fields { name } } } }"}</span> — ده بيجيبلك كل الـ mutations حتى اللي ما شفتهاش في الـ UI.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-num">4</div>
+          <div class="tl-content"><h5>Fuzz Operation Names</h5><p>Burp Intruder على الـ operationName field بـ wordlist من known GraphQL operations. ممكن تلاقي hidden operations مش موجودة في الـ docs.</p></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="cb rev" style="margin-bottom:1rem">
+<span class="cb-lbl">// GRAPHQL RBAC TEST TEMPLATE</span>
+<span class="dm">// For each operation: test ALL role sessions</span>
+
+<span class="p">POST</span> <span class="w">/graphql</span>
+<span class="g">Authorization:</span> <span class="y">Bearer [SESSION_ADMIN]</span>   <span class="dm">← baseline</span>
+
+{
+  <span class="g">"operationName"</span>: <span class="y">"triggerWorkspaceExport"</span>,
+  <span class="g">"variables"</span>: {
+    <span class="g">"workspaceId"</span>: <span class="y">"WORKSPACE_UUID"</span>,
+    <span class="g">"exportType"</span>: <span class="y">"ALL_WORKSPACE_MEMBERS"</span>
+  },
+  <span class="g">"query"</span>: <span class="y">"mutation triggerWorkspaceExport($workspaceId: ID!) { ... }"</span>
+}
+
+<span class="dm">// Then swap session to test each role:</span>
+<span class="gr">Admin:        200 OK → YES (baseline)</span>
+<span class="r">Team Member:  ??? → should be 403</span>
+<span class="r">Developer:    ??? → should be 403</span>
+<span class="r">Unprivileged: ??? → should be 403</span>
+      </div>
+      <div class="card cp">
+        <div class="clabel">GraphQL vs REST — الـ Testing Difference</div>
+        <ul class="cl">
+          <li>REST: test per URL → GraphQL: test per operation name</li>
+          <li>REST: 403 = blocked URL → GraphQL: 403 = blocked operation</li>
+          <li>GraphQL: same URL returns different data per operation</li>
+          <li>Use Burp's InQL extension للـ GraphQL testing</li>
+          <li>Introspection = free documentation of all operations</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S10: SESSION TOKEN ANALYSIS ══════ -->
+<section class="section" id="s10">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 10 — تحليل الـ Session Token</div>
+    <h2 class="sec-title">كيف الـ Server يعرف <em>Role</em> بتاعك؟</h2>
+    <p class="sec-desc">قبل ما تبدأ الـ testing، لازم تفهم كيفية الـ role validation. الـ answer في الـ session token.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="sb rev">
+    <div class="sb-hd"><span class="sb-type">// SCRIPT — الأسئلة الثلاثة الأساسية</span><span class="sb-time">80:00 – 100:00</span></div>
+    <div class="sb-body">
+      <p>لازم تجاوب على 3 أسئلة قبل ما تبدأ:</p>
+      <p>السؤال الأول: <span class="hl">إيه اللي بيتاستخدم للـ authentication؟</span> Session cookie؟ JWT؟ Custom cookie؟</p>
+      <p>السؤال التاني: <span class="hl">كيف الـ server بيعرف الـ role؟</span> بيجيبها من الـ session في الـ DB؟ موجودة في الـ JWT payload؟ موجودة في custom cookie؟</p>
+      <p>السؤال التالت: <span class="hl">هل ممكن نتلاعب بالـ role؟</span> لو موجودة في JWT مش validated — ده jackpot. لو في الـ DB — لازم نستخدم الـ session token بتاع كل role.</p>
+      <div class="nb">🔍 في Pantheon، الـ session token بيحتوي على 3 values مفصولة بـ %. كل محاولة لتعديلها أرجعت 401. يعني الـ server بيتحقق من الـ signature. Solution: استخدم الـ session token الكاملة بتاع كل role.</div>
+    </div>
+  </div>
+
+  <div class="dt rev" style="margin-top:2rem">
+    <div class="dt-lbl">// SESSION TOKEN ANALYSIS TREE</div>
+    <div style="direction:ltr">
+      <div class="dr"><span class="dq dn">After login — examine cookie/header</span></div>
+      <div class="di">
+        <p style="color:var(--muted);font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.12em;margin:.8rem 0 .4rem">TYPE IDENTIFICATION</p>
+        <div class="dr"><span class="dp dn">Starts with "eyJ"?</span><span class="darr">→</span><span class="da dn">JWT — decode at jwt.io</span></div>
+        <div class="dr"><span class="dp dn">Random opaque string?</span><span class="darr">→</span><span class="da dn">Session-based — role in DB</span></div>
+        <div class="dr"><span class="dp dn">Delimiters (: or %3A)?</span><span class="darr">→</span><span class="da dn">Custom format — decode and analyze</span></div>
+
+        <p style="color:var(--muted);font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.12em;margin:.8rem 0 .4rem">IF JWT — CHECK PAYLOAD</p>
+        <div class="dr"><span class="darr">→</span><span class="dp dn">role: "admin" in payload?</span><span class="dy dn">YES</span><span class="darr">→</span><span class="da dn">Test: shorten sig → change role → JACKPOT</span></div>
+        <div class="dr"><span class="darr">→</span><span class="dp dn">Only user_id in payload?</span><span class="dy dn">YES</span><span class="darr">→</span><span class="da dn">Role fetched from DB — need valid sessions per role</span></div>
+
+        <p style="color:var(--muted);font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.12em;margin:.8rem 0 .4rem">RBAC TESTING APPROACH</p>
+        <div class="dr"><span class="dgr dn">Role in JWT (not validated)</span><span class="darr">→</span><span class="da dn">Change "role":"developer" to "role":"admin"</span></div>
+        <div class="dr"><span class="dgr dn">Role in JWT (validated HS256)</span><span class="darr">→</span><span class="da dn">Try alg:none, brute force weak secret</span></div>
+        <div class="dr"><span class="dgr dn">Role in DB (opaque session)</span><span class="darr">→</span><span class="da dn">Use valid session token per role → test operations</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2 rev" style="margin-top:2rem">
+    <div class="cb">
+<span class="cb-lbl">// JWT WITH ROLE — TARGET FOR MODIFICATION</span>
+<span class="t">Header:</span>  {"alg": "HS256"}
+<span class="g">Payload:</span> {
+  <span class="y">"userId"</span>: <span class="w">"DEV-8821"</span>,
+  <span class="p">"role"</span>:   <span class="r">"developer"</span>,  <span class="dm">← change to "admin"?</span>
+  <span class="y">"workspace"</span>: <span class="w">"WS-4401"</span>
+}
+
+<span class="dm">// TEST: Shorten signature</span>
+<span class="gr">Still 200? → Change role → admin</span>
+<span class="r">Got 401?  → Validated → try alg:none</span>
+
+<span class="dm">// alg:none payload (base64):</span>
+<span class="p">eyJhbGciOiJub25lIn0</span><span class="dm">.</span>
+<span class="p">eyJ1c2VySWQiOiJERVYtODgyMSIsInJvbGUiOiJhZG1pbiJ9</span><span class="dm">.</span>
+<span class="dm">(empty sig — just trailing dot)</span>
+    </div>
+    <div class="cb">
+<span class="cb-lbl">// PANTHEON CUSTOM SESSION COOKIE</span>
+<span class="dm">// Raw cookie value (URL decoded):</span>
+<span class="p">a1b2c3d4e5f6</span><span class="dm">:</span><span class="g">USER-UUID-8821</span><span class="dm">:</span><span class="y">f7e8d9c0b1a2</span>
+
+<span class="dm">// Analysis:</span>
+<span class="dm">// Part 1: unknown (session token?)</span>
+<span class="dm">// Part 2: user ID (confirmed via Burp search)</span>
+<span class="dm">// Part 3: unknown (signature?)</span>
+
+<span class="dm">// TEST: Swap Part 2 with Admin user ID</span>
+<span class="r">→ 401 Unauthorized (tamper detected)</span>
+<span class="dm">// Conclusion: integrity check exists</span>
+<span class="gr">// Solution: use FULL session token per role</span>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S11: TESTING OPERATIONS ══════ -->
+<section class="section" id="s11">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 11 — عملية الـ Testing</div>
+    <h2 class="sec-title">Testing Operations — <em>الخطوة بالخطوة</em></h2>
+    <p class="sec-desc">بعد ما عملت الـ inventory وفهمت الـ session structure — ابدأ الـ testing بشكل منهجي.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="steps rev">
+    <div class="step">
+      <div class="sn">01</div>
+      <div class="sc">
+        <h4>الـ Admin Baseline</h4>
+        <p>قبل أي حاجة، اتأكد إن الـ operation شغالة مع الـ admin. لو الـ admin بيرجع error — في مشكلة في الـ request نفسه مش في الـ access control. وثّق الـ expected response كـ baseline.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn">02</div>
+      <div class="sc">
+        <h4>Test المفروض يتبلوك أولاً</h4>
+        <p>ابدأ بـ Team Member على mechanism المفروض يكون Admin-only. لو رجع 403 — confirmed correct. لو رجع 200 — <span class="ic" style="color:var(--purple)">FOUND IT!</span></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn">03</div>
+      <div class="sc">
+        <h4>اعمل test كل role على كل mechanism</h4>
+        <p>لا تفترض إن لأن Team Member اتبلوك، Developer برضو اتبلوك. اعمل test كل role على كل mechanism منفصل. الـ edge cases هي في اللي بيكون فيه role معين اتنسي.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn">04</div>
+      <div class="sc">
+        <h4>في GraphQL — غير الـ session token في نفس الـ Repeater tab</h4>
+        <p>خد الـ admin request في Repeater. بدّل بس الـ Authorization header / session cookie بـ session بتاع كل role. نفس الـ operation name، نفس الـ variables، بس session مختلف.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn">05</div>
+      <div class="sc">
+        <h4>وثّق كل response</h4>
+        <p>في الـ notes: <span class="ic">triggerWorkspaceExport</span>: Admin=200, TeamMember=403, Developer=403. لو أي واحد رجع 200 لما المفروض يرجع 403 — ده هو الـ finding.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn">06</div>
+      <div class="sc">
+        <h4>اعمل Bypass Attempts</h4>
+        <p>لو اتبلوكت — جرب: HTTP Method switching، URL path variations، header injection، parameter pollution. الـ server ممكن يبلوك <span class="ic">DELETE</span> بس ينسى <span class="ic">POST /delete</span>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="nt rev" style="margin-top:2rem">
+<div style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.18em;color:var(--pdim);margin-bottom:1rem">// TESTING RESULTS DOCUMENTATION</div>
+<span class="h1">## Testing Results</span>
+
+<span class="h2">### triggerWorkspaceExport (EXPORT MEMBERS CSV)</span>
+<span class="h3">Expected: Admin=YES, Others=NO (403)</span>
+
+<span class="k">Admin      </span>→ <span class="gr">200 OK   ← baseline confirmed ✓</span>
+<span class="k">Team Member</span>→ <span class="r">403 Forbidden ← CORRECT ✓ (no bug)</span>
+<span class="k">Developer  </span>→ <span class="r">403 Forbidden ← CORRECT ✓ (no bug)</span>
+
+<span class="h2">### deployLive (DEPLOY TO PRODUCTION)</span>
+<span class="h3">Expected: Admin+TeamMember=YES, Developer=NO</span>
+
+<span class="k">Admin      </span>→ <span class="gr">200 OK   ← baseline ✓</span>
+<span class="k">Team Member</span>→ <span class="gr">200 OK   ← correct ✓</span>
+<span class="k">Developer  </span>→ <span class="warn">??? → TEST NOW</span>
+
+<span class="h2">### updateMemberRole (CHANGE USER ROLE)</span>
+<span class="h3">Expected: Admin ONLY</span>
+
+<span class="k">Admin      </span>→ <span class="gr">200 OK   ← baseline ✓</span>
+<span class="k">Team Member</span>→ <span class="warn">??? → TEST NOW ⭐ HIGH PRIORITY</span>
+<span class="k">Developer  </span>→ <span class="warn">??? → TEST NOW ⭐ HIGH PRIORITY</span>
+  </div>
+</div>
+</section>
+
+
+
+<!-- ══════ S12: ADVANCED EXPLOITATION TECHNIQUES ══════ -->
+<section class="section" id="s12">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 12 — التكتيكات المتقدمة</div>
+    <h2 class="sec-title">Advanced Exploitation — <em>تقنيات الـ Bypass المعقدة</em></h2>
+    <p class="sec-desc">لما الـ Access Control العادي (زي تغيير ID) يترفض، لازم تلجأ لتقنيات معقدة بتستغل أخطاء الـ Architecture والـ Frameworks. الـ 4 تقنيات دول هما الـ Core بتاع الـ Advanced Bugs.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <!-- TECHNIQUE 1: MASS ASSIGNMENT -->
+  <div class="rev" style="margin-bottom: 4rem;">
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--purple);margin-bottom:1rem">1. Mass Assignment & Parameter Pollution</h3>
+    <p style="margin-bottom:1.5rem">في الـ Frameworks الحديثة (زي Spring, Laravel, Rails)، الـ Developer بياخد الـ JSON Object كله من الـ Request وبيرميه مباشرة في الداتابيز أو في الـ Model Object (حاجة اسمها Auto-Binding أو Mass Assignment). دي كارثة لو مفيش Allowlist!</p>
+    
+    <div class="cb rev" style="margin-bottom:1.5rem">
+<span class="cb-lbl">// HOW MASS ASSIGNMENT WORKS</span>
+<span class="dm">// Developer Code (Vulnerable):</span>
+<span class="p">User</span>.update(<span class="g">req.body</span>); <span class="dm">// Accepts EVERYTHING</span>
+
+<span class="dm">// Your Request (Normal):</span>
+<span class="p">PUT</span> /api/profile
+{ <span class="g">"email"</span>: <span class="y">"user@test.com"</span>, <span class="g">"name"</span>: <span class="y">"Hamada"</span> }
+
+<span class="dm">// Your Request (Exploit):</span>
+<span class="p">PUT</span> /api/profile
+{ 
+  <span class="g">"email"</span>: <span class="y">"user@test.com"</span>, 
+  <span class="g">"name"</span>: <span class="y">"Hamada"</span>,
+  <span class="warn">"role"</span>: <span class="y">"admin"</span>,
+  <span class="warn">"is_superuser"</span>: <span class="y">true</span>,
+  <span class="warn">"plan"</span>: <span class="y">"enterprise"</span>
+}
+    </div>
+    
+    <div class="sb">
+      <div class="sb-hd"><span class="sb-type">// SCRIPT — إزاي تجيب أسماء الـ Parameters؟</span></div>
+      <div class="sb-body">
+        <p>عشان تنجح في الـ Mass Assignment، لازم تعرف اسم الـ Parameter الحساس (<span class="hl">role, is_admin, permission_level</span>). بتجيبه إزاي؟</p>
+        <ul class="cl" style="margin-top:1rem">
+          <li><strong>من الـ GET Request:</strong> لما بتعمل <span class="ic">GET /api/profile</span>، السيرفر بيرجع الـ User Object كله. بص على الحقول اللي راجعة وخد الحساس منها وحطه في الـ PUT/POST Request.</li>
+          <li><strong>من الـ JavaScript Files:</strong> ابحث في الـ Source Code عن <span class="ic">user.role</span> أو <span class="ic">admin</span>.</li>
+          <li><strong>Brute-forcing:</strong> استخدم أداة زي ParamMiner أو ابعت قائمة طويلة من الـ admin parameters المشهورة في الـ JSON body.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- TECHNIQUE 2: VERB TAMPERING -->
+  <div class="rev" style="margin-bottom: 4rem;">
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--gold);margin-bottom:1rem">2. HTTP Method/Verb Tampering</h3>
+    <p style="margin-bottom:1.5rem">الـ Authorization Middlewares أحياناً بتتبرمج بطريقة غبية. المبرمج بيقول: "امنع أي يوزر عادي إنه يعمل POST على المسار ده". طب ماذا لو اليوزر العادي بعت PUT أو PATCH؟</p>
+    
+    <div class="sb">
+      <div class="sb-hd"><span class="sb-type">// SCRIPT — الـ Router Confusion</span></div>
+      <div class="sb-body">
+        <p>في بعض الـ Custom Routers أو سيرفرات الـ Java القديمة، لو غيرت הـ HTTP Verb، الـ Middleware Security Rule مش بتعمل Match، بس الـ Backend Controller بينفذ الطلب عادي!</p>
+        <div class="nb">💡 الخطوات: 
+        1. ابعت <span class="ic">POST /api/admin/delete</span> → هيجيلك <span class="r">403 Forbidden</span>.
+        2. غير في الـ Burp הـ Method لـ <span class="ic">PUT /api/admin/delete</span> بنفس الـ Body.
+        3. لو رجعلك <span class="gr">200 OK</span>، يبقى إنت عملت Bypass للـ Middleware Rule!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TECHNIQUE 3: CLIENT-SIDE TRUST -->
+  <div class="rev" style="margin-bottom: 4rem;">
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--teal);margin-bottom:1rem">3. Client-Side State Trust & Hydration (UI-to-API)</h3>
+    <p style="margin-bottom:1.5rem">في عصر الـ React والـ Next.js، الـ Frontend بياخد بيانات الجلسة ويخزنها في الـ Browser عشان يحدد إيه اللي يترسم على الشاشة. المشكلة بتحصل لما الـ Backend يثق في اللي الـ Frontend بيبعتهوله!</p>
+
+    <div class="g2">
+      <div class="card cp">
+        <div class="clabel">Local Storage Manipulation</div>
+        <p>افتح الـ DevTools (F12) → Application → LocalStorage. هتلاقي حاجات زي <span class="ic">{"userRole": "guest"}</span>. غيرها بإيدك لـ <span class="ic">admin</span> واعمل Refresh.</p>
+        <p>لو الـ UI رسم زراير الأدمن (زي Delete User)، والـ Backend نفذ الطلب لما ضغطت عليها بدون ما يتحقق من الداتابيز... دي ثغرة قاتلة!</p>
+      </div>
+      <div class="card cg-border">
+        <div class="clabel">Insecure JWT / Cookies</div>
+        <p>أحياناً الـ Role بيكون محطوط في Cookie مش متفرمة (بدون Signature)، أو JWT السيرفر مش بيتحقق من الـ Signature بتاعته.</p>
+        <p>فك الـ JWT بـ Base64، غير الـ Role، ارفعه تاني، وابعت الريكويست. لو السيرفر اعتمد على הـ Role اللي في الـ Token ومسألش الداتابيز، إنت بقيت Admin.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TECHNIQUE 4: GRAPHQL ALIASING -->
+  <div class="rev" style="margin-bottom: 2rem;">
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--red);margin-bottom:1rem">4. Advanced GraphQL: Aliasing & Batching</h3>
+    <p style="margin-bottom:1.5rem">الـ GraphQL ليه أسلحة دمار شامل لتخطي الـ WAF والـ Static Middlewares اللي بتدور على كلمات معينة في الريكويست.</p>
+    
+    <div class="cb rev">
+<span class="cb-lbl">// GRAPHQL ALIASING BYPASS</span>
+<span class="dm">// The Firewall Rule: Block any query containing the string "systemConfig"</span>
+
+<span class="dm">// Normal Query (Blocked 403):</span>
+<span class="p">query</span> {
+  <span class="warn">systemConfig</span> {
+    db_password
+  }
+}
+
+<span class="dm">// Aliased Query (Bypasses Firewall 200 OK):</span>
+<span class="p">query</span> {
+  <span class="g">innocentName</span>: <span class="y">systemConfig</span> {
+    <span class="g">harmlessField</span>: <span class="y">db_password</span>
+  }
+}
+<span class="dm">// The WAF sees "innocentName" and allows it.</span>
+<span class="dm">// The GraphQL engine translates it back and executes it!</span>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ══════ S13: IMPACT BUILDING ══════ -->
+<section class="section" id="s13">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 13 — إثبات الـ Impact</div>
+    <h2 class="sec-title">Impact Building — <em>ليه الـ Bug ده خطير؟</em></h2>
+    <p class="sec-desc">في الـ RBAC، الـ impact مش دايماً واضح. إنت لازم تحكي قصة — إيه اللي يقدر يحصل لو استغل attacker الـ bug ده.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="sb rev">
+    <div class="sb-hd"><span class="sb-type">// SCRIPT — بناء الـ Impact Story</span><span class="sb-time">100:00 – 115:00</span></div>
+    <div class="sb-body">
+      <p>لما لاقيت إن Developer قدر يعمل deploy — مش بس "Developer accessed restricted function". القصة هي: <span class="hl">Developer كتب backdoor code، عمله deploy بنفسه، والـ company ما عرفتش.</span></p>
+      <p>لما لاقيت إن Team Member يقدر يعمل export users CSV — القصة هي: <span class="hl">Team Member اللي اتفصل من الشركة أخد كل بيانات الـ customers قبل ما يمشي.</span></p>
+      <div class="nb">📋 كمان: فهم الـ compliance context بيزود الـ impact. لو التطبيق بيخدم European users — GDPR violation. Medical platform — HIPAA. الـ compliance mention بيرفع الـ severity.</div>
+    </div>
+  </div>
+
+  <div class="rev" style="overflow-x:auto;margin-top:2rem">
+    <table class="dt2">
+      <thead>
+        <tr>
+          <th>الـ Violation</th>
+          <th>الـ Impact Level</th>
+          <th>السيناريو الحقيقي</th>
+          <th>الـ Compliance Factor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Developer → Deploy Live</td>
+          <td><span class="pb r">CRITICAL</span></td>
+          <td>Rogue developer deploys backdoor, ransomware, defacement. No peer review bypass.</td>
+          <td>SOC2, ISO27001 — change management violation</td>
+        </tr>
+        <tr>
+          <td>Team Member → Change User Role</td>
+          <td><span class="pb r">CRITICAL</span></td>
+          <td>Escalate own role to Admin → full workspace takeover. Demote Admin → lockout.</td>
+          <td>Privileged access management controls</td>
+        </tr>
+        <tr>
+          <td>Team Member → Export Users CSV</td>
+          <td><span class="pb">HIGH</span></td>
+          <td>Disgruntled employee leaving the company takes full member list with roles + emails.</td>
+          <td>GDPR — personal data export, data minimization</td>
+        </tr>
+        <tr>
+          <td>Developer → Create Upstream</td>
+          <td><span class="pb">HIGH</span></td>
+          <td>Custom upstream = data routing. Developer routes production traffic to malicious endpoint.</td>
+          <td>Data integrity, supply chain security</td>
+        </tr>
+        <tr>
+          <td>Any Role → Admin Dashboard</td>
+          <td><span class="pb">MEDIUM</span></td>
+          <td>Information disclosure — billing, user list, workspace config exposed.</td>
+          <td>Data classification policy violation</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="g2 rev" style="margin-top:2rem">
+    <div class="card cp">
+      <div class="clabel">لما تكتب الـ Report — الـ Structure</div>
+      <div class="timeline" style="margin-top:1rem">
+        <div class="tl-item"><div class="tl-num">1</div><div class="tl-content"><h5>الـ Vulnerability</h5><p>Developer role can access triggerDeployLive GraphQL mutation which should be restricted to Team Member role and above.</p></div></div>
+        <div class="tl-item"><div class="tl-num">2</div><div class="tl-content"><h5>الـ Steps to Reproduce</h5><p>الـ exact request مع session token بتاع Developer role والـ response اللي جاب 200 OK.</p></div></div>
+        <div class="tl-item"><div class="tl-num">3</div><div class="tl-content"><h5>الـ Business Impact</h5><p>A developer with malicious intent can deploy arbitrary code to production without peer review, enabling backdoor installation or service disruption.</p></div></div>
+        <div class="tl-item"><div class="tl-num">4</div><div class="tl-content"><h5>الـ Remediation</h5><p>Add role check in deployment mutation resolver: IF current_user.role NOT IN [admin, team_member] → return 403.</p></div></div>
+      </div>
+    </div>
+    <div class="card cp">
+      <div class="clabel">الـ Impact Multipliers</div>
+      <ul class="cl">
+        <li><span class="tg r">Critical</span> يؤدي لـ Account Takeover أو code execution</li>
+        <li><span class="tg r">Critical</span> يكشف sensitive customer data</li>
+        <li><span class="tg r">Critical</span> Role escalation = full privilege</li>
+        <li><span class="tg">High</span> يؤدي لـ data exfiltration</li>
+        <li><span class="tg">High</span> GDPR/HIPAA compliance violation</li>
+        <li><span class="tg">High</span> Disrupts business operations</li>
+        <li><span class="tg gold">Medium</span> Information disclosure عن roles/structure</li>
+        <li><span class="tg gold">Medium</span> يؤثر على audit trail integrity</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S14: THOUGHTFUL TESTING ══════ -->
+<section class="section" id="s14">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 14 — الفلسفة</div>
+    <h2 class="sec-title">Thoughtful Testing — <em>وقت التفكير أهم من وقت الـ Keyboard</em></h2>
+    <p class="sec-desc">الـ concept الأهم في الـ RBAC testing. إنت مش بتهاجم — إنت بتفهم، وبعدين بتهاجم.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="sb rev">
+    <div class="sb-hd"><span class="sb-type">// SCRIPT — الـ Recording دي اخدت 3 أيام</span><span class="sb-time">115:00 – 130:00</span></div>
+    <div class="sb-body">
+      <p>Arson وضح إن الـ recording بتاعت الـ part 2 اخدت 3 أيام. مش عشان التطبيق كان صعب — عشان الـ testing من النوع ده <span class="hl">بيحتاج وقت تفكير حقيقي</span>.</p>
+      <p>لاحظت في الـ recording إنه وقف كتير، راح يجيب قهوة، بعيد عن الشاشة، رجع بفكرة جديدة. الـ process الحقيقي للـ RBAC testing مش بس في الـ keyboard — هو في الـ head.</p>
+      <div class="nb">💭 "Thoughtful testing — as you're going through, you really should be spending more time thinking than you are in front of a computer." — Arson</div>
+      <p>الـ RBAC testing مش fun زي الـ exploitation. بس هو الـ <span class="hl">most rewarding</span> لأن الـ bugs دي نادراً بتتلاقى بالـ automation وكتير من الـ researchers بيتجنبوها.</p>
+      <div class="gb">✓ "This is the best way for beginners to find their first bug. I cannot stress that enough." — Arson</div>
+    </div>
+  </div>
+
+  <div class="g3 rev" style="margin-top:2rem">
+    <div class="card cp">
+      <div class="clabel">الـ 3 Phases بتاعة كل Testing Session</div>
+      <div class="timeline" style="margin-top:1rem">
+        <div class="tl-item"><div class="tl-num">A</div><div class="tl-content"><h5>Exploration (50% of time)</h5><p>كلّك فضول. افتح كل صفحة، اقرأ الـ docs، افهم الـ business logic. مفيش testing هنا.</p></div></div>
+        <div class="tl-item"><div class="tl-num">B</div><div class="tl-content"><h5>Mapping (30% of time)</h5><p>وثق كل حاجة. Role map، mechanism inventory، session structure. Notes أولاً دايماً.</p></div></div>
+        <div class="tl-item"><div class="tl-num">C</div><div class="tl-content"><h5>Testing (20% of time)</h5><p>بس بعد الـ A وB — الـ testing نفسه بيكون سريع ومنظم لأن عارف بالظبط إيه اللي بتدور عليه.</p></div></div>
+      </div>
+    </div>
+    <div class="card cp">
+      <div class="clabel">علامات إنك على الطريق الصح</div>
+      <ul class="cl">
+        <li>بتسأل "ليه" مش بس "إيه"</li>
+        <li>بتفهم business logic وراء كل role</li>
+        <li>Notes بتاعتك قابلة لحد تاني يفهمها</li>
+        <li>بتلاقي mechanisms مش موجودة في الـ docs</li>
+        <li>بتستغرب من بعض القرارات التصميمية</li>
+        <li>بتحدد الـ target قبل ما تبدأ الـ testing</li>
+        <li>بتعمل step away بعد كل finding مهم</li>
+      </ul>
+    </div>
+    <div class="card cp">
+      <div class="clabel">علامات إنك على الطريق الغلط</div>
+      <ul class="cl">
+        <li><span class="tg r">NO</span> بتحاول كل endpoint من غير فهم</li>
+        <li><span class="tg r">NO</span> مش بتعمل notes — بتعتمد على memory</li>
+        <li><span class="tg r">NO</span> بتستخدم automated scanner بدل الـ manual</li>
+        <li><span class="tg r">NO</span> مش بتعرف الـ role purpose</li>
+        <li><span class="tg r">NO</span> بتفتكر 403 = no bug وتمشي</li>
+        <li><span class="tg r">NO</span> بتعمل test نفس الـ role بأكتر من account</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S15: DECISION TREES ══════ -->
+<section class="section" id="s15">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 15 — Decision Trees الكاملة</div>
+    <h2 class="sec-title">كل قرار <em>ليه مساره</em></h2>
+    <p class="sec-desc">من لحظة ما تفتح البرنامج لحد ما تكتب الـ report.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <!-- MASTER TREE -->
+  <div class="dt rev" style="margin-bottom:2rem">
+    <div class="dt-lbl">// MASTER RBAC HUNTING TREE — FROM PROGRAM SELECTION TO FINDING</div>
+    <div style="direction:ltr;overflow-x:auto">
+      <div class="dr"><span style="color:var(--pdim)">◆</span><span class="dq dn">Target selected — start here</span></div>
+      <div class="di">
+        <p style="color:var(--muted);font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.12em;margin:.8rem 0 .4rem">PHASE 1 — PROGRAM QUALIFICATION</p>
+        <div class="dr"><span class="darr">→</span><span class="dq dn">Has 3+ distinct user roles?</span><span class="dy dn">YES</span><span class="darr">→</span><span class="dgr dn">PROCEED</span></div>
+        <div class="dr"><span class="darr">→</span><span class="dq dn">Has 3+ distinct user roles?</span><span class="dn-no dn">NO</span><span class="darr">→</span><span class="da dn">Consider another program for RBAC</span></div>
+        <div class="dr"><span class="darr">→</span><span class="dq dn">Self-registration available?</span><span class="dy dn">YES</span><span class="darr">→</span><span class="dgr dn">PROCEED</span></div>
+        <div class="dr"><span class="darr">→</span><span class="dq dn">Permission table documented?</span><span class="dy dn">YES</span><span class="darr">→</span><span class="dgr dn">GOLD — has test plan</span></div>
+
+        <p style="color:var(--muted);font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.12em;margin:.8rem 0 .4rem">PHASE 2 — ENVIRONMENT MAPPING</p>
+        <div class="dr"><span class="darr">→</span><span class="dq dn">How many environments/workspaces?</span></div>
+        <div class="dr" style="margin-left:2rem"><span class="dp dn">Personal + Team</span><span class="darr">→</span><span class="da dn">Map both — identify which has RBAC</span></div>
+        <div class="dr" style="margin-left:2rem"><span class="dp dn">Single workspace</span><span class="darr">→</span><span class="da dn">Simpler — focus on role levels</span></div>
+
+        <p style="color:var(--muted);font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.12em;margin:.8rem 0 .4rem">PHASE 3 — ROLE MAPPING</p>
+        <div class="dr"><span class="darr">→</span><span class="da dn">Create one account per role</span></div>
+        <div class="dr"><span class="darr">→</span><span class="da dn">For each role: what CAN they do? What CANNOT they do?</span></div>
+        <div class="dr"><span class="darr">→</span><span class="da dn">Mark every "CANNOT" as a test target</span></div>
+
+        <p style="color:var(--muted);font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.12em;margin:.8rem 0 .4rem">PHASE 4 — TECHNOLOGY DETECTION</p>
+        <div class="dr"><span class="dq dn">Backend type?</span><span class="dp dn">GraphQL</span><span class="darr">→</span><span class="da dn">Collect operation names → test per operation</span></div>
+        <div class="dr"><span class="dq dn">Backend type?</span><span class="dp dn">REST API</span><span class="darr">→</span><span class="da dn">Collect endpoints → test per URL + method</span></div>
+
+        <p style="color:var(--muted);font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.12em;margin:.8rem 0 .4rem">PHASE 5 — SESSION ANALYSIS</p>
+        <div class="dr"><span class="dq dn">Session contains role in JWT?</span><span class="dy dn">YES (not validated)</span><span class="darr">→</span><span class="da dn">Change role directly → JACKPOT</span></div>
+        <div class="dr"><span class="dq dn">Session contains role in JWT?</span><span class="dy dn">YES (validated)</span><span class="darr">→</span><span class="da dn">alg:none / brute force</span></div>
+        <div class="dr"><span class="dq dn">Session opaque?</span><span class="dp dn">YES</span><span class="darr">→</span><span class="da dn">Use full valid session per role → test operations</span></div>
+
+        <p style="color:var(--muted);font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.12em;margin:.8rem 0 .4rem">PHASE 6 — TESTING</p>
+        <div class="dr"><span class="darr">→</span><span class="da dn">For each [mechanism × role] that should be blocked:</span></div>
+        <div class="dr" style="margin-left:2rem"><span class="dgr dn">Admin: 200 OK (baseline)?</span><span class="darr">→</span><span class="da dn">Confirmed operation works</span></div>
+        <div class="dr" style="margin-left:2rem"><span class="dq dn">Lower role: 200 OK?</span><span class="dy dn">YES</span><span class="darr">→</span><span class="dgr dn">🏆 ACCESS CONTROL VIOLATION FOUND!</span></div>
+        <div class="dr" style="margin-left:2rem"><span class="dq dn">Lower role: 403?</span><span class="dn-no dn">403</span><span class="darr">→</span><span class="da dn">Try bypass techniques → move to next</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BYPASS TREE -->
+  <div class="dt rev" style="margin-bottom:2rem">
+    <div class="dt-lbl">// 403 BYPASS TECHNIQUES TREE</div>
+    <div style="direction:ltr;overflow-x:auto">
+      <div class="dr"><span class="dn-no dn">Got 403 — try these before moving on</span></div>
+      <div class="di">
+        <div class="dr"><span class="dp dn">HTTP Method Switch</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="dq dn">GET blocked?</span><span class="darr">→</span><span class="da dn">Try POST / PUT / PATCH / OPTIONS</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="dq dn">DELETE blocked?</span><span class="darr">→</span><span class="da dn">Try POST /resource/delete or PUT with delete flag</span></div>
+
+        <div class="dr" style="margin-top:.8rem"><span class="dp dn">URL Path Manipulation</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">/admin/users → /Admin/users (capitalization)</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">/admin/users → /admin/users/ (trailing slash)</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">/admin/users → /%61dmin/users (URL encoding)</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">/admin/users → /admin/./users (path traversal)</span></div>
+
+        <div class="dr" style="margin-top:.8rem"><span class="dp dn">Header Injection</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">X-Original-URL: /admin/users</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">X-Rewrite-URL: /admin/users</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">X-Forwarded-For: 127.0.0.1 (localhost bypass)</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">X-Custom-IP-Authorization: 127.0.0.1</span></div>
+
+        <div class="dr" style="margin-top:.8rem"><span class="dp dn">Content-Type Manipulation</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">application/json → application/xml</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">application/json → text/plain</span></div>
+
+        <div class="dr" style="margin-top:.8rem"><span class="dp dn">GraphQL-specific</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">Batch queries: combine forbidden op with allowed op</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">Alias confusion: rename forbidden field in query</span></div>
+        <div class="dr" style="margin-left:1.5rem"><span class="darr">→</span><span class="da dn">Introspection to find undocumented operations</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROLE CONFUSION TREE -->
+  <div class="dt rev">
+    <div class="dt-lbl">// ROLE CONFUSION DETECTION TREE</div>
+    <div style="direction:ltr">
+      <div class="dr"><span class="dq dn">Unexpected behavior found</span></div>
+      <div class="di">
+        <div class="dr"><span class="dq dn">Lower role accessed admin function?</span><span class="dy dn">YES</span><span class="darr">→</span><span class="dgr dn">Vertical Privilege Escalation</span></div>
+        <div class="dr"><span class="dq dn">User accessed another user's data?</span><span class="dy dn">YES</span><span class="darr">→</span><span class="dgr dn">Horizontal Escalation (overlaps IDOR)</span></div>
+        <div class="dr"><span class="dq dn">Unauthenticated accessed auth endpoint?</span><span class="dy dn">YES</span><span class="darr">→</span><span class="dgr dn">Missing authentication check</span></div>
+        <div class="dr"><span class="dq dn">Role can READ admin data but not WRITE?</span><span class="dp dn">Partial</span><span class="darr">→</span><span class="da dn">Test every CRUD operation separately</span></div>
+        <div class="dr"><span class="dq dn">403 on UI but 200 via API?</span><span class="dy dn">YES</span><span class="darr">→</span><span class="dgr dn">Client-side enforcement only — RBAC bug!</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S16: CHEATSHEET ══════ -->
+<section class="section" id="s16">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 16 — الملخص</div>
+    <h2 class="sec-title">RBAC <em>Cheatsheet</em> الكامل</h2>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="g2 rev" style="margin-bottom:1.5rem">
+    <div class="card cp">
+      <div class="clabel">Program Selection Checklist</div>
+      <ul class="cl">
+        <li>3+ distinct roles documented?</li>
+        <li>Collaboration/team workspace concept?</li>
+        <li>Self-registration for each role?</li>
+        <li>Permission table available in docs?</li>
+        <li>Low bounty = less competition?</li>
+        <li>Auditor/read-only external role?</li>
+        <li>SaaS/CMS type platform?</li>
+      </ul>
+    </div>
+    <div class="card cp">
+      <div class="clabel">Role Setup Checklist</div>
+      <ul class="cl">
+        <li>One account per role via plus notation</li>
+        <li>Different browser per role (no session sharing)</li>
+        <li>Session token documented per role in notes</li>
+        <li>Role name in email alias (not demo1/2)</li>
+        <li>Admin account = workspace creator</li>
+        <li>Test Burp browser for 3rd+ session</li>
+        <li>Verify each role can do its expected operations</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="g2 rev" style="margin-bottom:1.5rem">
+    <div class="card cp">
+      <div class="clabel">403 Bypass Techniques</div>
+      <ul class="cl">
+        <li>HTTP method switching (GET→POST→PUT)</li>
+        <li>URL capitalization (/Admin/)</li>
+        <li>Trailing slash (/admin/users/)</li>
+        <li>URL encoding /%61dmin/</li>
+        <li>X-Original-URL header injection</li>
+        <li>X-Forwarded-For: 127.0.0.1</li>
+        <li>GraphQL batch query with allowed op</li>
+      </ul>
+    </div>
+    <div class="card cp">
+      <div class="clabel">GraphQL RBAC Testing</div>
+      <ul class="cl">
+        <li>Burp search "operationName" → collect all ops</li>
+        <li>Introspection query → find hidden operations</li>
+        <li>Test each op with each role session</li>
+        <li>Fuzz operation names with wordlist</li>
+        <li>Batch queries to bypass auth checks</li>
+        <li>Use InQL Burp extension</li>
+        <li>Check field-level permissions in schema</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cb rev">
+<span class="cb-lbl">// RBAC TESTING CHECKLIST — لكل mechanism × role</span>
+<span class="p">[ ] 1.</span> <span class="w">Admin baseline → confirm 200 OK → log response</span>
+<span class="p">[ ] 2.</span> <span class="w">Team Member → swap session → send same request → 200 or 403?</span>
+<span class="p">[ ] 3.</span> <span class="w">Developer → swap session → send same request → 200 or 403?</span>
+<span class="p">[ ] 4.</span> <span class="w">Unprivileged → swap session → send same request → 200 or 403?</span>
+<span class="t">[ ] 5.</span> <span class="w">If 403: try HTTP method switch (GET→POST→PUT→PATCH)</span>
+<span class="t">[ ] 6.</span> <span class="w">If 403: try URL path variations (/admin/ /Admin/ /%61dmin/)</span>
+<span class="t">[ ] 7.</span> <span class="w">If 403: try X-Original-URL, X-Forwarded-For headers</span>
+<span class="y">[ ] 8.</span> <span class="w">Log result: [Op Name]: Admin=200, TM=403, Dev=200 ← BUG!</span>
+<span class="y">[ ] 9.</span> <span class="w">If found: document full request + response for report</span>
+<span class="gr">[ ] 10.</span> <span class="w">Build impact story: what can attacker do with this access?</span>
+<span class="gr">[ ] 11.</span> <span class="w">Step away → think → confirm before submitting</span>
+<span class="gr">[ ] 12.</span> <span class="w">Check compliance factor (GDPR/HIPAA/SOC2) for severity</span>
+  </div>
+
+  <div class="rev" style="margin-top:1.5rem;overflow-x:auto">
+    <table class="dt2">
+      <thead>
+        <tr>
+          <th>Bug Type</th>
+          <th>How to Find</th>
+          <th>Expected Severity</th>
+          <th>Best Target</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Vertical Privilege Escalation</td><td>Lower role → Admin-only function → 200 OK</td><td><span class="pb r">CRITICAL</span></td><td>Any admin-only destructive/config operation</td></tr>
+        <tr><td>Function-level RBAC bypass</td><td>Read-only role → write/delete operation → 200</td><td><span class="pb r">HIGH-CRITICAL</span></td><td>Export, deploy, delete endpoints</td></tr>
+        <tr><td>Horizontal Access Violation</td><td>User A → User B's data/operations → 200</td><td><span class="pb">HIGH</span></td><td>Multi-tenant SaaS workspace isolation</td></tr>
+        <tr><td>Unauthenticated Access</td><td>Remove auth header → authenticated endpoint → 200</td><td><span class="pb">HIGH</span></td><td>Any endpoint found after login</td></tr>
+        <tr><td>JWT Role Manipulation</td><td>Role in JWT → not validated → change to admin</td><td><span class="pb r">CRITICAL</span></td><td>Any JWT with role/permissions claim</td></tr>
+        <tr><td>GraphQL Op-level bypass</td><td>Mutation for admin-only op → non-admin session → 200</td><td><span class="pb r">CRITICAL</span></td><td>Export, delete, configure mutations</td></tr>
+        <tr><td>Client-side only enforcement</td><td>Button hidden in UI but API accepts request</td><td><span class="pb">HIGH</span></td><td>Features that "disappear" for lower roles</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</section>
+
+<!-- ══════ S17: QUIZ ══════ -->
+<section class="section" id="s17">
+<div class="container">
+  <div class="rev">
+    <div class="sec-eye">// 17 — اختبر نفسك</div>
+    <h2 class="sec-title"><em>Quiz</em> — RBAC Methodology</h2>
+    <p class="sec-desc">5 أسئلة عن decision-making حقيقي — مش عن تعريفات.</p>
+  </div>
+  <div class="ornament">◆ ◇ ◆</div>
+
+  <div class="qc rev" id="q1">
+    <div class="qq">لقيت برنامج SaaS عنده Admin وUser فقط (دورين). الـ bounty منخفض $500-1000. إيه قرارك؟</div>
+    <div class="qos">
+      <div class="qo" data-v="A"><span class="ql">A.</span> ابعد عنه — الـ bounty منخفض جداً</div>
+      <div class="qo" data-v="B"><span class="ql">B.</span> ابعد عنه — دورين بس مش كافي لـ RBAC testing جيد</div>
+      <div class="qo" data-v="C"><span class="ql">C.</span> اعمل testing عليه — Admin vs User كافي</div>
+      <div class="qo" data-v="D"><span class="ql">D.</span> اعمل testing لأن الـ bounty المنخفض = منافسة أقل، بس ابحث كمان عن granular permissions جوا كل role</div>
+    </div>
+    <div class="qe" id="q1-e"><strong>الإجابة الصح: D</strong><br><br>الـ bounty المنخفض = منافسة أقل = فرصة أحسن. وحتى لو في دورين بس ظاهرياً، جوا كل role ممكن يكون في granular permissions (read vs write vs delete) اللي تستاهل testing. الـ rule المهم: دور على الـ granularity جوا الـ roles مش بس عدد الـ roles.</div>
+  </div>
+
+  <div class="qc rev" id="q2">
+    <div class="qq">في Pantheon، جمعت الـ operations من Burp وجاب معاك: getCurrentUser, cmsIndexSiteList, triggerWorkspaceExport. كيف بتحدد أي واحد تبدأ بيه؟</div>
+    <div class="qos">
+      <div class="qo" data-v="A"><span class="ql">A.</span> ابدأ بـ getCurrentUser — اسمه بيقول إنه مهم</div>
+      <div class="qo" data-v="B"><span class="ql">B.</span> ابدأ بـ triggerWorkspaceExport — لأن في الـ role table الـ export هو Admin-only</div>
+      <div class="qo" data-v="C"><span class="ql">C.</span> اعمل test الثلاثة بنفس الترتيب — مفيش فرق</div>
+      <div class="qo" data-v="D"><span class="ql">D.</span> ابدأ بـ cmsIndexSiteList — لأنه READ وأسهل</div>
+    </div>
+    <div class="qe" id="q2-e"><strong>الإجابة الصح: B</strong><br><br>الـ priority بيجي من الـ role table مش من اسم الـ operation. لما تعرف إن الـ export هو Admin-only من الـ documentation، ده بيبقى أعلى priority لأنك عارف بالظبط إيه اللي المفروض يكون blocked. getCurrentUser هو operation بيشتغل مع كل role = skip. cmsIndexSiteList كمان بيشتغل مع كل role = lower priority.</div>
+  </div>
+
+  <div class="qc rev" id="q3">
+    <div class="qq">بعثت الـ triggerWorkspaceExport operation بـ Team Member session فرجع 403. إيه خطوتك الجاية؟</div>
+    <div class="qos">
+      <div class="qo" data-v="A"><span class="ql">A.</span> ده معناه مفيش bug — مشي للـ operation التالية</div>
+      <div class="qo" data-v="B"><span class="ql">B.</span> جرب HTTP method switching: POST → GET → PUT على نفس الـ operation</div>
+      <div class="qo" data-v="C"><span class="ql">C.</span> وثّق الـ 403 وجرب bypass techniques (URL encoding, method switch, header injection) ثم انتقل للـ Developer session على نفس الـ operation</div>
+      <div class="qo" data-v="D"><span class="ql">D.</span> ابعث report فوراً — 403 ده بيثبت إن في access control implemented</div>
+    </div>
+    <div class="qe" id="q3-e"><strong>الإجابة الصح: C</strong><br><br>403 = correct behavior, NOT a bug. بس مش معناه تمشي فوراً. خطوتان: (1) جرب bypass techniques — ممكن الـ 403 بيتجاوز بـ header injection أو method switch. (2) انتقل لـ Developer session على نفس الـ operation — ممكن الـ Team Member اتبلوك بس الـ Developer اتنسي. كل role لازم تتاختبر على كل operation منفصل.</div>
+  </div>
+
+  <div class="qc rev" id="q4">
+    <div class="qq">الـ JWT session بتاع التطبيق بيحتوي على: {"userId": "DEV-8821", "role": "developer"}. اختصرت آخر حرف من الـ signature وبعثت admin-only operation — رجع 401. إيه الخطوة الجاية؟</div>
+    <div class="qos">
+      <div class="qo" data-v="A"><span class="ql">A.</span> الـ role manipulation مش ممكن — خلص من الـ JWT attack vector</div>
+      <div class="qo" data-v="B"><span class="ql">B.</span> جرب alg:none — ابعت {"alg":"none"} في الـ header وشيل الـ signature كلها</div>
+      <div class="qo" data-v="C"><span class="ql">C.</span> الـ signature validated — استخدم valid developer session وابعت operation كده وخلاص</div>
+      <div class="qo" data-v="D"><span class="ql">D.</span> جرب alg:none، ولو فشل جرب HS256 secret brute force، ولو فشل — الـ JWT مأمون واستخدم sessions مختلفة للـ testing</div>
+    </div>
+    <div class="qe" id="q4-e"><strong>الإجابة الصح: D</strong><br><br>الـ 401 بعد اختصار الـ signature = validated. بس ده مش نهاية الـ JWT attacks. الترتيب الصح: (1) alg:none — ممكن الـ library بتقبله، (2) HS256 weak secret brute force بـ hashcat، (3) لو الاتنين فشلوا — الـ JWT مأمون واستخدم valid sessions لكل role. المهم مش تستسلم بعد الـ 401 الأولى.</div>
+  </div>
+
+  <div class="qc rev" id="q5">
+    <div class="qq">Developer بيعمل click على "Deploy" button في الـ UI فمش بيلاقيه (hidden من الـ frontend). إيه اللي المفروض تعمله؟</div>
+    <div class="qos">
+      <div class="qo" data-v="A"><span class="ql">A.</span> ده معناه إن الـ developer مش مسموحله يعمل deploy — البرنامج OK</div>
+      <div class="qo" data-v="B"><span class="ql">B.</span> الـ UI hiding مش security — ابعت الـ deploy API request مباشرة من Burp بـ developer session</div>
+      <div class="qo" data-v="C"><span class="ql">C.</span> محتاج تعمل XSS عشان تشوف الـ hidden button</div>
+      <div class="qo" data-v="D"><span class="ql">D.</span> ده client-side enforcement فقط — مش bug لأن الـ UI مش بيسمح بيه</div>
+    </div>
+    <div class="qe" id="q5-e"><strong>الإجابة الصح: B</strong><br><br>الـ UI hiding هو client-side enforcement فقط — وده مش security! الـ API مش عارف إن الـ button hidden. إنت كـ attacker بتبعت الـ API request مباشرة من Burp. لو الـ API قبل الـ request وعمل deploy — ده هو الـ bug. الـ rule: "Never assume frontend limitations reflect backend restrictions."</div>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="pline"></div>
+  <p>HAMADA KHAIRY ACADEMY · ACCESS CONTROL VIOLATIONS · RBAC METHODOLOGY</p>
+  <p style="margin-top:.5rem;font-size:.5rem;opacity:.35">PART II OF THE SERIES — COMBINING WITH IDOR IN PART III</p>
+  <div class="pline"></div>
+</footer>
+
+<script>
+// REVEAL
+const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); }), {threshold:.07});
+document.querySelectorAll('.rev').forEach(r => obs.observe(r));
+
+// NAV ACTIVE
+const secEls = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-link');
+const navObs = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if(e.isIntersecting){
+      navLinks.forEach(l => l.classList.remove('active'));
+      const a = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+      if(a){ a.classList.add('active'); a.scrollIntoView({block:'nearest',inline:'center'}); }
+    }
+  });
+}, {threshold:.25});
+secEls.forEach(s => navObs.observe(s));
+
+// QUIZ
+const ANS = {q1:'D', q2:'B', q3:'C', q4:'D', q5:'B'};
+document.querySelectorAll('.qc').forEach(card => {
+  const id = card.id;
+  const correct = ANS[id];
+  card.querySelectorAll('.qo').forEach(opt => {
+    opt.addEventListener('click', function(){
+      if(card.querySelector('.correct')) return;
+      card.querySelectorAll('.qo').forEach(o => { if(o.dataset.v === correct) o.classList.add('correct'); });
+      if(this.dataset.v !== correct) this.classList.add('wrong');
+      document.getElementById(id + '-e')?.classList.add('show');
+    });
+  });
+});
+</script>
+
+<!-- BLACK SITE SCRIPTS -->
+<script>
+    /* ═══ CURSOR ═══ */
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    (function animCursor() {
+        rx += (mx - rx) * 0.18;
+        ry += (my - ry) * 0.18;
+        if(dot) { dot.style.left = mx + 'px'; dot.style.top = my + 'px'; }
+        if(ring) { ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; }
+        requestAnimationFrame(animCursor);
+    })();
+
+    /* ═══ HEX CANVAS ═══ */
+    (function () {
+        const canvas = document.getElementById('hexCanvas');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let w, h, hexes = [];
+        function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; buildHexes(); }
+        function buildHexes() {
+            hexes = [];
+            const size = 40, xStep = size * 1.75, yStep = size * 1.52;
+            for (let row = -1; row * yStep < h + yStep; row++) {
+                for (let col = -1; col * xStep < w + xStep; col++) {
+                    const x = col * xStep + (row % 2 ? xStep * 0.5 : 0);
+                    const y = row * yStep;
+                    hexes.push({ x, y, size, phase: Math.random() * Math.PI * 2, speed: 0.001 + Math.random() * 0.002 });
+                }
+            }
+        }
+        function drawHex(x, y, s, alpha) {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const a = (Math.PI / 3) * i - Math.PI / 6;
+                const px = x + s * Math.cos(a), py = y + s * Math.sin(a);
+                i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = `rgba(201,160,99,${alpha})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+        }
+        let t = 0;
+        function draw() {
+            ctx.clearRect(0, 0, w, h);
+            t += 0.005;
+            hexes.forEach(h => {
+                const a = (Math.sin(t * h.speed * 200 + h.phase) + 1) * 0.5;
+                const alpha = a * 0.04 + 0.01;
+                drawHex(h.x, h.y, h.size, alpha);
+            });
+            requestAnimationFrame(draw);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+        draw();
+    })();
+</script>
+</body>
+</html>

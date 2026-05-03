@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hamada Khairy — منهجية صيد IDOR</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;700&family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;700;900&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0906;
+      --bg2: #100d09;
+      --bg3: #16120d;
+      --bg4: #1e1810;
+      --border: rgba(180, 140, 70, 0.15);
+      --border2: rgba(180, 140, 70, 0.07);
+      --gold: #c9a063;
+      --gold2: #e2bc7a;
+      --gold-dim: #8a6a3a;
+      --cream: #e8dcc8;
+      --text: #b8a890;
+      --muted: #6b5a45;
+      --muted2: #3d3020;
+      --red: #c04a3a;
+      --red-dim: rgba(192, 74, 58, 0.1);
+      --teal: #4a8a7a;
+      --teal-dim: rgba(74, 138, 122, 0.1);
+      --white: #f0e8d8;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Tajawal', 'Cairo', sans-serif;
+      font-size: 16px;
+      line-height: 1.85;
+      direction: rtl;
+      overflow-x: hidden
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9998;
+      opacity: .5
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 0 5vw;
+      gap: 2rem
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 65% 50%, rgba(201, 160, 99, .05) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 10% 90%, rgba(201, 160, 99, .03) 0%, transparent 50%);
+      pointer-events: none
+    }
+
+    .hero-left {
+      position: relative;
+      z-index: 2;
+      padding: 5rem 0
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      margin-bottom: 2rem;
+      font-family: 'Cinzel', serif;
+      font-size: .6rem;
+      letter-spacing: .25em;
+      color: var(--gold-dim);
+      direction: ltr
+    }
+
+    .eyebrow::before {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 1px;
+      background: var(--gold-dim)
+    }
+
+    .eyebrow span {
+      color: var(--gold)
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(3.2rem, 5.5vw, 5.2rem);
+      line-height: 1.05;
+      color: var(--white)
+    }
+
+    .hero-italic {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-style: italic;
+      font-size: clamp(3.2rem, 5.5vw, 5.2rem);
+      color: var(--gold);
+      display: block;
+      line-height: 1.05;
+      margin-top: .1rem
+    }
+
+    .hero-desc {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 460px;
+      margin: 1.8rem 0 2.5rem;
+      line-height: 1.75;
+      direction: rtl
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: var(--bg);
+      font-family: 'Cinzel', serif;
+      font-size: .68rem;
+      letter-spacing: .2em;
+      padding: .85rem 2rem;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .2s
+    }
+
+    .btn-gold:hover {
+      background: var(--gold2)
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--cream);
+      font-family: 'Cinzel', serif;
+      font-size: .68rem;
+      letter-spacing: .2em;
+      padding: .85rem 2rem;
+      border: 1px solid rgba(180, 140, 70, .3);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: border-color .2s, color .2s
+    }
+
+    .btn-outline:hover {
+      border-color: var(--gold);
+      color: var(--gold)
+    }
+
+    .hero-tag {
+      margin-top: 3rem;
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      font-family: 'Cinzel', serif;
+      font-size: .58rem;
+      letter-spacing: .2em;
+      color: var(--muted2);
+      direction: ltr
+    }
+
+    .hero-tag::before {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 1px;
+      background: var(--muted2)
+    }
+
+    .hero-right {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 2
+    }
+
+    .char-wrap {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .char-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(201, 160, 99, .12);
+      box-shadow: 0 0 80px rgba(201, 160, 99, .05), inset 0 0 80px rgba(201, 160, 99, .03)
+    }
+
+    .char-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 18px;
+      border-radius: 50%;
+      border: 1px solid rgba(201, 160, 99, .06)
+    }
+
+    .char-img {
+      width: 350px;
+      height: 350px;
+      object-fit: contain;
+      object-position: top center;
+      position: relative;
+      z-index: 2;
+      filter: drop-shadow(0 20px 60px rgba(0, 0, 0, .85))
+    }
+
+    .char-label {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(11, 9, 6, .88);
+      border: 1px solid rgba(180, 140, 70, .25);
+      padding: .38rem 1.2rem;
+      font-family: 'Cinzel', serif;
+      font-size: .58rem;
+      letter-spacing: .2em;
+      color: var(--gold);
+      white-space: nowrap;
+      direction: ltr
+    }
+
+    .char-label::before,
+    .char-label::after {
+      content: '◆';
+      margin: 0 .5rem;
+      font-size: .38rem;
+      opacity: .5
+    }
+
+    /* NAV */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(11, 9, 6, .93);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 5vw;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 54px
+    }
+
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: .98rem;
+      color: var(--cream);
+      letter-spacing: .02em
+    }
+
+    .nav-brand em {
+      color: var(--gold);
+      font-style: italic
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none
+    }
+
+    .nav-links::-webkit-scrollbar {
+      display: none
+    }
+
+    .nav-link {
+      padding: 0 1.1rem;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      font-family: 'Cinzel', serif;
+      font-size: .58rem;
+      letter-spacing: .13em;
+      color: var(--muted);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: all .2s;
+      white-space: nowrap
+    }
+
+    .nav-link:hover {
+      color: var(--gold)
+    }
+
+    .nav-link.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold)
+    }
+
+    /* LAYOUT */
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 5vw
+    }
+
+    .section {
+      padding: 6rem 0;
+      border-bottom: 1px solid var(--border2);
+      position: relative
+    }
+
+    .sec-eye {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      margin-bottom: 1.2rem;
+      font-family: 'Cinzel', serif;
+      font-size: .58rem;
+      letter-spacing: .25em;
+      color: var(--gold-dim);
+      direction: ltr
+    }
+
+    .sec-eye::before {
+      content: '';
+      display: block;
+      width: 22px;
+      height: 1px;
+      background: var(--gold-dim)
+    }
+
+    .sec-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(2rem, 3.8vw, 3.2rem);
+      line-height: 1.1;
+      color: var(--white)
+    }
+
+    .sec-title em {
+      font-style: italic;
+      color: var(--gold)
+    }
+
+    .sec-desc {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      color: var(--muted);
+      font-size: 1.02rem;
+      max-width: 560px;
+      margin-top: .8rem
+    }
+
+    .ornament {
+      text-align: center;
+      color: var(--gold-dim);
+      font-size: .65rem;
+      letter-spacing: .5em;
+      margin: 2.5rem 0;
+      opacity: .45
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      position: relative;
+      transition: border-color .3s
+    }
+
+    .card:hover {
+      border-color: rgba(201, 160, 99, .28)
+    }
+
+    .cg {
+      border-right: 2px solid var(--gold)
+    }
+
+    .cr {
+      border-right: 2px solid var(--red)
+    }
+
+    .ct {
+      border-right: 2px solid var(--teal)
+    }
+
+    .cd {
+      border-right: 2px solid var(--muted2)
+    }
+
+    .clabel {
+      font-family: 'Cinzel', serif;
+      font-size: .56rem;
+      letter-spacing: .18em;
+      color: var(--gold-dim);
+      margin-bottom: .8rem;
+      text-transform: uppercase;
+      direction: ltr
+    }
+
+    .clabel.r {
+      color: var(--red);
+      opacity: .7
+    }
+
+    .clabel.t {
+      color: var(--teal);
+      opacity: .8
+    }
+
+    .card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--cream);
+      margin-bottom: .7rem
+    }
+
+    .card p,
+    .card li {
+      color: var(--text);
+      font-size: .92rem;
+      line-height: 1.85
+    }
+
+    .card ul {
+      padding-right: 1rem
+    }
+
+    .card ul li {
+      margin-bottom: .35rem
+    }
+
+    .g2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem
+    }
+
+    .g3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem
+    }
+
+    @media(max-width:768px) {
+
+      .g2,
+      .g3 {
+        grid-template-columns: 1fr
+      }
+
+      .hero {
+        grid-template-columns: 1fr
+      }
+
+      .char-wrap {
+        display: none
+      }
+    }
+
+    /* CHECKLIST */
+    .cl {
+      list-style: none;
+      padding: 0
+    }
+
+    .cl li {
+      display: flex;
+      align-items: flex-start;
+      gap: .8rem;
+      padding: .55rem 0;
+      border-bottom: 1px solid var(--border2);
+      color: var(--text);
+      font-size: .9rem;
+      line-height: 1.7
+    }
+
+    .cl li:last-child {
+      border-bottom: none
+    }
+
+    .cl li::before {
+      content: '◆';
+      color: var(--gold-dim);
+      font-size: .42rem;
+      margin-top: .58rem;
+      flex-shrink: 0
+    }
+
+    .tg {
+      background: rgba(201, 160, 99, .07);
+      border: 1px solid rgba(201, 160, 99, .18);
+      color: var(--gold-dim);
+      font-family: 'Cinzel', serif;
+      font-size: .53rem;
+      padding: .13rem .5rem;
+      letter-spacing: .08em;
+      flex-shrink: 0
+    }
+
+    .tg.t {
+      background: var(--teal-dim);
+      border-color: rgba(74, 138, 122, .2);
+      color: var(--teal)
+    }
+
+    .tg.r {
+      background: var(--red-dim);
+      border-color: rgba(192, 74, 58, .2);
+      color: var(--red);
+      opacity: .8
+    }
+
+    /* CODE */
+    .cb {
+      background: #070504;
+      border: 1px solid var(--border);
+      padding: 1.6rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .74rem;
+      line-height: 2;
+      overflow-x: auto;
+      position: relative;
+      direction: ltr;
+      text-align: left
+    }
+
+    .cb-lbl {
+      font-family: 'Cinzel', serif;
+      font-size: .53rem;
+      letter-spacing: .16em;
+      color: var(--gold-dim);
+      margin-bottom: 1rem;
+      opacity: .65;
+      display: block
+    }
+
+    .cb .g {
+      color: var(--gold)
+    }
+
+    .cb .g2c {
+      color: var(--gold2)
+    }
+
+    .cb .t {
+      color: #7ab8a8
+    }
+
+    .cb .r {
+      color: #c06a5a
+    }
+
+    .cb .m {
+      color: var(--muted)
+    }
+
+    .cb .w {
+      color: var(--cream)
+    }
+
+    .cb .y {
+      color: #c8b070
+    }
+
+    .cb .d {
+      color: var(--muted2)
+    }
+
+    /* SCRIPT */
+    .sb {
+      border: 1px solid var(--border);
+      overflow: hidden;
+      background: var(--bg2)
+    }
+
+    .sb-hd {
+      background: rgba(201, 160, 99, .04);
+      border-bottom: 1px solid var(--border);
+      padding: .75rem 1.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      direction: ltr
+    }
+
+    .sb-type {
+      font-family: 'Cinzel', serif;
+      font-size: .56rem;
+      letter-spacing: .16em;
+      color: var(--gold-dim)
+    }
+
+    .sb-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .62rem;
+      color: var(--muted)
+    }
+
+    .sb-body {
+      padding: 1.8rem 2rem
+    }
+
+    .sb-body p {
+      color: var(--text);
+      font-size: .96rem;
+      line-height: 1.9;
+      margin-bottom: 1rem
+    }
+
+    .sb-body p:last-child {
+      margin-bottom: 0
+    }
+
+    .hl {
+      color: var(--gold);
+      font-weight: 700
+    }
+
+    .hl2 {
+      color: #7ab8a8;
+      font-weight: 700
+    }
+
+    .nb {
+      background: rgba(201, 160, 99, .04);
+      border-right: 2px solid var(--gold-dim);
+      padding: .9rem 1.1rem;
+      color: var(--text);
+      font-size: .9rem;
+      margin: 1.1rem 0;
+      font-family: 'EB Garamond', serif;
+      font-style: italic
+    }
+
+    .wb {
+      background: rgba(192, 74, 58, .05);
+      border-right: 2px solid var(--red);
+      padding: .9rem 1.1rem;
+      color: var(--text);
+      font-size: .9rem;
+      margin: 1.1rem 0;
+      font-family: 'EB Garamond', serif;
+      font-style: italic
+    }
+
+    /* DTREE */
+    .dt {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 1.8rem 2rem 1.4rem;
+      overflow-x: auto
+    }
+
+    .dt-lbl {
+      font-family: 'Cinzel', serif;
+      font-size: .55rem;
+      letter-spacing: .18em;
+      color: var(--gold-dim);
+      margin-bottom: 1.4rem;
+      direction: ltr
+    }
+
+    .dn {
+      display: inline-block;
+      padding: .3rem .85rem;
+      font-size: .76rem;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap
+    }
+
+    .dq {
+      background: rgba(74, 138, 122, .1);
+      border: 1px solid rgba(74, 138, 122, .28);
+      color: #7ab8a8
+    }
+
+    .dy {
+      background: rgba(201, 160, 99, .1);
+      border: 1px solid rgba(201, 160, 99, .28);
+      color: var(--gold)
+    }
+
+    .dn-no {
+      background: rgba(192, 74, 58, .08);
+      border: 1px solid rgba(192, 74, 58, .22);
+      color: #c06a5a
+    }
+
+    .da {
+      background: rgba(201, 160, 99, .05);
+      border: 1px solid rgba(201, 160, 99, .13);
+      color: var(--cream)
+    }
+
+    .dw {
+      background: rgba(192, 74, 58, .05);
+      border: 1px solid rgba(192, 74, 58, .18);
+      color: #c08060
+    }
+
+    .dr {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      margin: .45rem 0;
+      direction: ltr;
+      flex-wrap: wrap
+    }
+
+    .darr {
+      color: var(--muted2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem
+    }
+
+    .di {
+      margin-left: 2rem;
+      border-left: 1px solid var(--border);
+      padding-left: 1.4rem;
+      margin-top: .4rem
+    }
+
+    /* NOTE TEMPLATE */
+    .nt {
+      background: #060402;
+      border: 1px solid rgba(201, 160, 99, .18);
+      padding: 1.8rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      line-height: 2;
+      direction: ltr;
+      text-align: left
+    }
+
+    .nt .h1 {
+      color: var(--gold)
+    }
+
+    .nt .h2 {
+      color: var(--gold2)
+    }
+
+    .nt .h3 {
+      color: #c8b070
+    }
+
+    .nt .k {
+      color: #7ab8a8
+    }
+
+    .nt .v {
+      color: var(--text)
+    }
+
+    .nt .dm {
+      color: var(--muted)
+    }
+
+    .nt .fl {
+      color: #c06a5a
+    }
+
+    .nt .ok {
+      color: #7ab878
+    }
+
+    /* STEPS */
+
+    .step {
+      display: flex;
+      gap: 1.8rem;
+      margin-bottom: 2.2rem;
+      align-items: flex-start
+    }
+
+    .sn {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      border: 1px solid rgba(201, 160, 99, .28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      color: var(--gold-dim);
+      position: relative
+    }
+
+    .sn::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      background: linear-gradient(135deg, rgba(201, 160, 99, .04), transparent)
+    }
+
+    .sc h4 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.18rem;
+      color: var(--cream);
+      margin-bottom: .4rem;
+      font-weight: 600
+    }
+
+    .sc p {
+      color: var(--text);
+      font-size: .92rem;
+      line-height: 1.85
+    }
+
+    .ic {
+      background: rgba(201, 160, 99, .07);
+      color: var(--gold-dim);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72em;
+      padding: .1em .42em;
+      border: 1px solid rgba(201, 160, 99, .13)
+    }
+
+    /* TABLE */
+    .dt2 {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85rem
+    }
+
+    .dt2 th {
+      background: rgba(201, 160, 99, .05);
+      color: var(--gold-dim);
+      font-family: 'Cinzel', serif;
+      font-size: .56rem;
+      letter-spacing: .13em;
+      padding: .85rem 1.1rem;
+      text-align: right;
+      border-bottom: 1px solid rgba(201, 160, 99, .18);
+      font-weight: 400
+    }
+
+    .dt2 td {
+      padding: .75rem 1.1rem;
+      border-bottom: 1px solid var(--border2);
+      color: var(--text);
+      vertical-align: top;
+      line-height: 1.7
+    }
+
+    .dt2 tr:hover td {
+      background: rgba(201, 160, 99, .02)
+    }
+
+    .pb {
+      display: inline-block;
+      border: 1px solid rgba(201, 160, 99, .22);
+      color: var(--gold-dim);
+      font-family: 'Cinzel', serif;
+      font-size: .52rem;
+      padding: .18rem .65rem;
+      letter-spacing: .1em
+    }
+
+    .pb.t {
+      border-color: rgba(74, 138, 122, .22);
+      color: var(--teal)
+    }
+
+    .pb.r {
+      border-color: rgba(192, 74, 58, .18);
+      color: var(--red);
+      opacity: .75
+    }
+
+    /* QUIZ */
+    .qc {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      margin-bottom: 1.5rem
+    }
+
+    .qq {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.12rem;
+      color: var(--cream);
+      margin-bottom: 1.4rem;
+      line-height: 1.6
+    }
+
+    .qq::before {
+      content: '— ';
+      color: var(--gold-dim)
+    }
+
+    .qos {
+      display: flex;
+      flex-direction: column;
+      gap: .55rem
+    }
+
+    .qo {
+      display: flex;
+      align-items: flex-start;
+      gap: .9rem;
+      padding: .8rem 1.1rem;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all .2s;
+      font-size: .88rem;
+      color: var(--text)
+    }
+
+    .qo:hover {
+      border-color: rgba(201, 160, 99, .32);
+      background: rgba(201, 160, 99, .02)
+    }
+
+    .qo.correct {
+      border-color: rgba(201, 160, 99, .45);
+      background: rgba(201, 160, 99, .06);
+      color: var(--gold2)
+    }
+
+    .qo.wrong {
+      border-color: rgba(192, 74, 58, .28);
+      background: var(--red-dim);
+      color: #c08070
+    }
+
+    .ql {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: .98rem;
+      color: var(--gold-dim);
+      flex-shrink: 0;
+      line-height: 1.45
+    }
+
+    .qe {
+      margin-top: 1.1rem;
+      padding: 1.1rem;
+      background: rgba(201, 160, 99, .04);
+      border-right: 2px solid var(--gold-dim);
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: .95rem;
+      color: var(--text);
+      display: none
+    }
+
+    .qe.show {
+      display: block
+    }
+
+    .qe strong {
+      color: var(--gold);
+      font-style: normal;
+      font-family: 'Cairo', sans-serif
+    }
+
+    /* REVEAL */
+    .rev {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity .6s ease, transform .6s ease
+    }
+
+    .rev.in {
+      opacity: 1;
+      transform: none
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 3.5rem 5vw;
+      border-top: 1px solid var(--border);
+      text-align: center
+    }
+
+    footer p {
+      font-family: 'Cinzel', serif;
+      font-size: .58rem;
+      letter-spacing: .18em;
+      color: var(--muted2)
+    }
+
+    .gline {
+      width: 55px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+      margin: 1.2rem auto
+    }
+
+    /* BLACK SITE INJECTIONS */
+    body {
+      cursor: none !important;
+    }
+
+    .cursor-dot {
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      background: var(--gold, #c9a063);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s;
+      box-shadow: 0 0 10px var(--gold, #c9a063);
+    }
+
+    .cursor-ring {
+      position: fixed;
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(201, 160, 99, 0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.25s cubic-bezier(.23, 1, .32, 1), width 0.2s, height 0.2s, border-color 0.2s;
+    }
+
+    body:has(a:hover) .cursor-ring,
+    body:has(button:hover) .cursor-ring,
+    body:has(.ws-tab:hover) .cursor-ring,
+    body:has(.lab-card:hover) .cursor-ring {
+      width: 48px;
+      height: 48px;
+      border-color: var(--gold, #c9a063);
+    }
+
+    /* SCANLINE SWEEP */
+    .scanline {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(201, 160, 99, 0.15), transparent);
+      animation: scan 8s linear infinite;
+      z-index: 9996;
+      pointer-events: none;
+    }
+
+    @keyframes scan {
+      0% {
+        top: -2px;
+        opacity: 0;
+      }
+
+      5% {
+        opacity: 1;
+      }
+
+      95% {
+        opacity: 0.3;
+      }
+
+      100% {
+        top: 100vh;
+        opacity: 0;
+      }
+    }
+
+    /* HEX GRID BACKGROUND */
+    .hex-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201, 160, 99, 0.04) 0%, transparent 60%);
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .hex-bg canvas {
+      position: absolute;
+      inset: 0;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* ADJUST MAIN CONTAINER Z-INDEX SO IT SITS ABOVE HEX BG */
+    .main,
+    .container,
+    .topbar,
+    .lab-view,
+    .lv-topbar,
+    .lv-sidebar,
+    .lv-workspace,
+    .lv-body,
+    .lv-title,
+    .hero {
+      position: relative;
+      z-index: 10;
+    }
+  </style>
+</head>
+
+<!-- BLACK SITE INJECTIONS -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="scanline"></div>
+<div class="hex-bg"><canvas id="hexCanvas"></canvas></div>
+
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="eyebrow">BUG BOUNTY <span>·</span> IDOR HUNTING <span>·</span> METHODOLOGY</div>
+    <h1 class="hero-title">منهجية صيد</h1>
+    <span class="hero-italic">الـ IDOR.</span>
+    <p class="hero-desc">دليل شامل من اختيار البرنامج لحد إثبات الـ impact — مبني على تحليل عميق لمنهجية Arson على
+      Starbucks Bug Bounty.</p>
+    <div class="hero-btns">
+      <a class="btn-gold" href="#s1">ابدأ الدرس →</a>
+      <a class="btn-outline" href="#s12">الـ Cheatsheet</a>
+      <a class="btn-outline" href="https://youtu.be/BVoy5QXBCXY" target="_blank" style="border-color: var(--gold); color: var(--gold); text-shadow: 0 0 8px rgba(201,160,99,0.3);">
+        <span style="font-family: sans-serif; font-size: 0.9rem;">▶</span> شرح الفيديو
+      </a>
+    </div>
+    <div class="hero-tag">TAUGHT BY HAMADA KHAIRY · IDOR · ACCESS CONTROL · BUG BOUNTY</div>
+  </div>
+  <div class="hero-right">
+    <div class="char-wrap">
+      <img src="FastFetch-Hamada.png" alt="Hamada Khairy" class="char-img">
+      <div class="char-label">THE INSTRUCTOR</div>
+    </div>
+  </div>
+</section>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <div class="nav-brand">Hamada Khairy <em>Academy</em></div>
+  <div class="nav-links">
+    <a class="nav-link" href="#video-expl" style="color:var(--gold); border: 1px solid rgba(201, 160, 99, 0.3); padding: 2px 8px; border-radius: 4px; margin-left: 5px;">فيديو الشرح ▶</a>
+    <a class="nav-link active" href="#s1">الفرق الأساسي</a>
+    <a class="nav-link" href="#s2">اختيار البرنامج</a>
+    <a class="nav-link" href="#s3">الحسابات</a>
+    <a class="nav-link" href="#s4">نظام التدوين</a>
+    <a class="nav-link" href="#s5">Min Request</a>
+    <a class="nav-link" href="#s6">JWT</a>
+    <a class="nav-link" href="#s7">Pointers</a>
+    <a class="nav-link" href="#s8">CRUD</a>
+    <a class="nav-link" href="#s9">Objects</a>
+    <a class="nav-link" href="#s10">Decision Trees</a>
+    <a class="nav-link" href="#s11">Apply Now</a>
+    <a class="nav-link" href="#s12">Cheatsheet</a>
+    <a class="nav-link" href="#s13">Quiz</a>
+  </div>
+</nav>
+
+<!-- VIDEO EXPLANATION -->
+<section class="section" id="video-expl" style="padding-top: 8rem; border-bottom: 1px solid var(--border2); background: rgba(201,160,99, 0.01);">
+  <div class="container">
+    <div class="rev" style="text-align: center; margin-bottom: 3rem;">
+      <div class="sec-eye" style="color: var(--gold);">// 00 — VIDEO OVERVIEW</div>
+      <h2 class="sec-title" style="color: var(--white); margin-bottom: 1rem;">شرح فيديو <em>كامل</em> للمنهجية</h2>
+      <p class="sec-desc" style="max-width: 700px; margin: 0 auto; color: var(--muted);">شاهد شرح الفيديو الكامل لمنهجية الـ IDOR وكيفية اختيار الأهداف واكتشاف الثغرات عملياً.</p>
+    </div>
+    
+    <div class="rev" style="max-width: 850px; margin: 0 auto; background: var(--bg2); border: 1px solid var(--border); padding: 1.5rem; position: relative;">
+      <a href="https://youtu.be/BVoy5QXBCXY" target="_blank" style="display: block; position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; text-decoration: none; border: 1px solid rgba(201,160,99,0.1);">
+        <img src="https://img.youtube.com/vi/BVoy5QXBCXY/maxresdefault.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border: none; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8" alt="IDOR Explanation Video">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 50px; background: rgba(201, 160, 99, 0.9); border-radius: 12px; display: flex; align-items: center; justify-content: center; pointer-events: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+          <div style="width: 0; height: 0; border-style: solid; border-width: 12px 0 12px 20px; border-color: transparent transparent transparent #fff;"></div>
+        </div>
+      </a>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--gold); letter-spacing: 0.1em;">▶ VIDEO RUNTIME: COMPLETE WALKTHROUGH</span>
+        <a href="https://youtu.be/BVoy5QXBCXY" target="_blank" style="color: var(--gold); text-decoration: none; font-size: 0.85rem; font-family: 'Cinzel', serif; letter-spacing: 0.1em; border-bottom: 1px solid var(--gold);">OPEN ON YOUTUBE ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S1 -->
+<section class="section" id="s1" style="padding-top:8rem">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 01 — المبدأ الأول</div>
+      <h2 class="sec-title">IDOR <em>vs</em> Access Control</h2>
+      <p class="sec-desc">الاتنين ممكن يودوا لنفس النتيجة — بس الطريق مختلف تماماً. وخلطهم بيضيع attack vectors كاملة.
+      </p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="g2 rev">
+      <div class="card cg">
+        <div class="clabel">IDOR — Indirect Object Reference</div>
+        <h3>فشل في التحقق من الملكية</h3>
+        <p style="margin-bottom:1.2rem">التطبيق بيأخد ID من الـ user ويرجع data من غير ما يتأكد إن الـ user ده <strong
+            style="color:var(--cream)">صاحب</strong> الـ data دي.</p>
+        <div class="cb">
+          <span class="cb-lbl">// IDOR EXAMPLE</span>
+          <span class="t">GET</span> <span class="w">/profile?userId=</span><span class="g">1337</span>
+
+          <span class="m">// Backend:</span>
+          SELECT * FROM users WHERE id = <span class="g">1337</span>
+          <span class="r">// ❌ مش بيسأل: هل session owner = 1337؟</span>
+        </div>
+        <div
+          style="margin-top:1.1rem;padding:.75rem 1rem;background:rgba(201,160,99,.04);border:1px solid var(--border)">
+          <p style="font-size:.83rem;color:var(--muted)">Failure: <strong style="color:var(--gold-dim)">object-level
+              authorization</strong></p>
+        </div>
+      </div>
+      <div class="card ct">
+        <div class="clabel t">Access Control Violation</div>
+        <h3>فشل في التحقق من الصلاحية</h3>
+        <p style="margin-bottom:1.2rem">الـ user بيوصل لـ <strong style="color:var(--cream)">mechanism</strong> من
+          المفروض إن الـ role بتاعه مش مسموحله يستخدمه أصلاً.</p>
+        <div class="cb">
+          <span class="cb-lbl">// ACCESS CONTROL EXAMPLE</span>
+          <span class="t">GET</span> <span class="w">/admin/users/all</span>
+
+          <span class="m">// Expected:</span> <span class="r">403 Forbidden</span>
+          <span class="m">// Vulnerable:</span> <span class="g">200 OK</span> <span class="m">— كل الـ users</span>
+          <span class="r">// ❌ مش بيتحقق إن role = admin</span>
+        </div>
+        <div
+          style="margin-top:1.1rem;padding:.75rem 1rem;background:rgba(74,138,122,.04);border:1px solid rgba(74,138,122,.15)">
+          <p style="font-size:.83rem;color:var(--muted)">Failure: <strong style="color:var(--teal)">function-level
+              authorization</strong></p>
+        </div>
+      </div>
+    </div>
+    <div class="sb rev" style="margin-top:2rem">
+      <div class="sb-hd"><span class="sb-type">// SCRIPT — الفرق العملي</span><span class="sb-time">0:00 – 4:00</span>
+      </div>
+      <div class="sb-body">
+        <p>النهارده هنتكلم عن الـ <span class="hl">IDOR</span> وعن الـ <span class="hl2">Access Control
+            Violations</span>. الموضوع ده مش بس عشان تتعلم — ده عشان تفهم ليه الـ <span class="hl">automated
+            scanners</span> مش هتلاقي الـ bugs دي أبداً. إنت بتفهم الـ context اللي الـ scanner مش بيفهمه — ده الـ
+          unfair advantage بتاعك.</p>
+        <p>لو قدرت تغير ID بتاعك لـ ID حد تاني وشفت بياناته — ده <span class="hl">IDOR</span>. إنت authorized تستخدم الـ
+          mechanism — بس مش المفروض توصل لـ object حد تاني. أما لو وصلت لـ endpoint مش مسموحلك بيه أصلاً — ده <span
+            class="hl2">Access Control Violation</span>.</p>
+        <div class="wb">⚠️ النتيجة ممكن تكون نفسها — بس الـ root cause مختلف تماماً. لو خلطتهم هتضيع attack vectors
+          كاملة وتفتكر إنك غطيت كل حاجة وأنت مغطيتش حاجة.</div>
+        <p>في الـ cloud-first world اللي احنا فيه، الـ attacker مش بيدور على shell — بيدور على <span
+            class="hl">data</span>. الـ customer database هي الـ Crown Jewel. AWS Lambda بيديك scope محدود — بس لو وصلت
+          للـ database، ده هو الـ devastating impact الحقيقي.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S2 -->
+<section class="section" id="s2">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 02 — قبل ما تبدأ</div>
+      <h2 class="sec-title">اختيار <em>البرنامج</em> الصح</h2>
+      <p class="sec-desc">مش كل برنامج يستاهل وقتك — في معايير أساسية لازم تتأكد منها الأول.</p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="g3 rev">
+      <div class="card cg">
+        <div class="clabel">✦ MUST HAVE</div>
+        <ul class="cl">
+          <li>Authenticated testing مسموح</li>
+          <li>Self-registration متاحة</li>
+          <li>Multiple accounts ممكن تعملها</li>
+          <li>Attack surface كبيرة</li>
+        </ul>
+      </div>
+      <div class="card ct">
+        <div class="clabel t">✦ GREAT TO HAVE</div>
+        <ul class="cl">
+          <li>برنامج غير إنجليزي <span class="tg t">أقل منافسة</span></li>
+          <li>Multiple user roles</li>
+          <li>Payment / gift card features</li>
+          <li>API endpoints منفصلة</li>
+        </ul>
+      </div>
+      <div class="card cr">
+        <div class="clabel r">✦ RED FLAGS</div>
+        <ul class="cl">
+          <li>مفيش authenticated testing</li>
+          <li>Self-registration ممنوعة</li>
+          <li>Surface ضيقة جداً</li>
+          <li>Static pages فقط</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sb rev" style="margin-top:2rem">
+      <div class="sb-hd"><span class="sb-type">// SCRIPT — سر البرامج الغير إنجليزية</span><span class="sb-time">4:00 –
+          5:30</span></div>
+      <div class="sb-body">
+        <p>Starbucks Singapore ليه؟ نفس الـ codebase تقريباً — بس بيتعمله testing أقل بكتير. والـ Singapore version لسه
+          إنجليزي — فمعندكش language barrier.</p>
+        <div class="nb">🌏 دور على الـ Japanese، Korean، German، Singapore versions بتاعة الـ programs الكبيرة. نفس الـ
+          bugs، تنافس أقل بكتير. الـ patch ممكن اتعمل على الـ American version من زمان وما وصلش لـ Singapore لسه.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S3 -->
+<section class="section" id="s3">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 03 — الأساس</div>
+      <h2 class="sec-title">حسابين — <em>مش حساب واحد</em></h2>
+      <p class="sec-desc">المنهجية الصح: وثق الـ identifiers مش الـ passwords.</p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="steps rev">
+      <div class="step">
+        <div class="sn">I</div>
+        <div class="sc">
+          <h4>HackerOne Email + Plus Notation</h4>
+          <p>استخدم <span class="ic">you+demo1@wearehacker.one</span> و <span
+              class="ic">you+demo2@wearehacker.one</span>. الاتنين بيوصلوا نفس الـ inbox — بس الـ app بيشوفهم حسابين
+            منفصلين. الشركة هتعرف إنك researcher.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="sn">II</div>
+        <div class="sc">
+          <h4>الـ Identifiers هم الكنز</h4>
+          <p>بعد الإنشاء: Burp Suite → <span class="ic">jwt.io</span> → وثق الـ nameId وكل identifier. المقارنة بينهم هي
+            اللي بتكشف الـ sequential pattern.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="sn">III</div>
+        <div class="sc">
+          <h4>Account 1 Normal / Account 2 Incognito</h4>
+          <p>Burp Suite بيشوف الـ traffic من الاتنين. ده بيخليك تقدر تقارن بين الـ requests والـ responses بسهولة.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="sn">IV</div>
+        <div class="sc">
+          <h4>قارن — دور على الـ Pattern</h4>
+          <p>A1: <span class="ic">8800327</span> — A2: <span class="ic">8800329</span>. Sequential = الـ IDs predictable
+            = الباب مفتوح. لو GUIDs — هتحتاج تلاقيهم من endpoints تانية.</p>
+        </div>
+      </div>
+    </div>
+    <div class="cb rev" style="margin-top:1.5rem">
+      <span class="cb-lbl">// NOTES → ACCOUNTS SECTION</span>
+      <span class="h1">## Accounts</span>
+
+      <span class="t">### Account 1</span>
+      <span class="w">Email :</span> <span class="y">arson+demo1@wearehacker.one</span>
+      <span class="w">nameId:</span> <span class="g">8800327</span> <span class="m">← document this</span>
+      <span class="w">jti :</span> <span class="y">a3f9c2bd...</span>
+
+      <span class="t">### Account 2</span>
+      <span class="w">Email :</span> <span class="y">arson+demo2@wearehacker.one</span>
+      <span class="w">nameId:</span> <span class="g">8800329</span> <span class="m">← Δ=2 → Sequential ✅ HIGH IDOR
+        potential</span>
+      <span class="w">jti :</span> <span class="y">b7e1d4a1...</span>
+    </div>
+  </div>
+</section>
+
+<!-- S4 -->
+<section class="section" id="s4">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 04 — نظام التدوين</div>
+      <h2 class="sec-title">The Arson <em>Note System</em></h2>
+      <p class="sec-desc">مش note-taking عادي — ده نظام تفكير يخليك تشوف الـ application كاملاً في رأسك.</p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="sb rev">
+      <div class="sb-hd"><span class="sb-type">// SCRIPT — ليه النوتس مش اختياري</span><span class="sb-time">5:30 –
+          8:00</span></div>
+      <div class="sb-body">
+        <p>لو مش بتعمل notes — إنت مش هتنجح في الـ IDOR testing. مش رأي — ده fact. الـ IDOR testing مبني على الـ
+          context. إنت محتاج تعرف <span class="hl">كل mechanism</span>، <span class="hl">إيه اللي بيتبعت في كل
+            request</span>، وإيه اللي بيرجع في الـ response. لو مش موثق — هتنسى وهتلف في دوايرة.</p>
+        <div class="nb">📝 الـ VS Code + Markdown. Structure ثابت على كل target: <strong
+            style="color:var(--gold-dim)">Pointers → Accounts → Mechanisms → Objects</strong>. Pointers = علامات الـ bad
+          security culture. Mechanisms = كل CRUD موثق مع الـ auth method.</div>
+      </div>
+    </div>
+    <div class="nt rev" style="margin-top:2rem">
+      <div
+        style="font-family:'Cinzel',serif;font-size:.53rem;letter-spacing:.18em;color:var(--gold-dim);margin-bottom:1.1rem">
+        // ARSON NOTE TEMPLATE — FULL</div>
+      <span class="h1"># [TARGET] — IDOR TESTING</span>
+
+      <span class="h2">## Pointers</span> <span class="dm">← علامات bad security culture</span>
+      1. [<span class="fl">POINTER</span>] <span class="v">CSRF token not validated on GET /profile</span>
+      2. [<span class="fl">POINTER</span>] <span class="v">Session cookie 'auth' missing HTTP-Only flag</span>
+      3. [<span class="fl">POINTER</span>] <span class="v">JWT using HS256 (symmetric) — why not RS256?</span>
+      4. [<span class="fl">POINTER</span>] <span class="v">Two auth patterns: /api/* uses JWT, core uses session</span>
+
+      <span class="h2">## Accounts</span>
+      <span class="h3">### A1:</span> <span class="k">nameId=</span><span class="v">8800327</span> <span class="h3">###
+        A2:</span> <span class="k">nameId=</span><span class="v">8800329</span> <span class="ok">← sequential ✅</span>
+
+      <span class="h2">## Mechanisms</span>
+      <span class="h3">### Personal Info</span>
+      <span class="k">READ </span> = GET → <span class="v">/rewards/profile</span> <span class="dm">← auth cookie</span>
+      <span class="k">UPDATE</span> = POST → <span class="v">/rewards/profile</span> <span class="dm">← auth cookie | ❓
+        email in body why?</span>
+      <span class="k">UPDATE</span> = POST → <span class="v">/rewards/profile/changeEmail</span> <span class="dm">← auth
+        cookie | ❓ fuzz hidden params</span>
+
+      <span class="h3">### Payment Methods</span>
+      <span class="k">READ </span> = GET → <span class="v">/rewards/api/card/get-payment-cards</span> <span class="dm">←
+        ACCESS TOKEN (JWT HS256) ⚠️</span>
+      <span class="fl"> → Signature IS validated — test JWT attacks</span>
+
+      <span class="h3">### Gift Cards ⭐ HIGH PRIORITY</span>
+      <span class="k">READ </span> = POST → <span class="v">/rewards/api/giftcard/search</span>
+      <span class="dm"> Body: {"cardNumber": "XXXX"}</span>
+      <span class="ok"> ⚡ cardNumber in body → IDOR CANDIDATE ← TEST FIRST</span>
+
+      <span class="h2">## Objects</span>
+      <span class="h3">### Gift Card: </span> <span class="k">cardId, cardNumber, balance, imageUrl, autoReload,
+        status</span>
+      <span class="h3">### User: </span> <span class="k">firstName, lastName, title, birthDate, email, points,
+        tier</span>
+      <span class="h3">### Transaction:</span> <span class="k">transactionId: "cae0d1e7..."</span> <span class="dm">←
+        GUID format</span>
+    </div>
+  </div>
+</section>
+
+<!-- S5 -->
+<section class="section" id="s5">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 05 — الـ Technique الأقوى</div>
+      <h2 class="sec-title">نظرية الـ <em>Minimum Request</em></h2>
+      <p class="sec-desc">شيل كل حاجة غير ضرورية لحد ما تفهم إيه اللي الـ backend بيستخدمه فعلاً عشان يعرف إنت مين.</p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="sb rev">
+      <div class="sb-hd"><span class="sb-type">// SCRIPT — The Minimum Request Theory</span><span class="sb-time">8:00 –
+          14:00</span></div>
+      <div class="sb-body">
+        <p>أول ما بتفتح endpoint جديد في Burp Repeater، السؤال الأول مش "في IDOR ولا لأ؟" — السؤال هو: <span
+            class="hl">إيه أصغر request ممكن يشتغل؟</span></p>
+        <p>إنت بتشيل cookie بعد cookie، header بعد header، لحد ما الـ response يتعطل. الـ minimum set اللي بيشتغل — ده
+          هو الـ authentication mechanism بتاعك.</p>
+        <div class="wb">🚨 في Starbucks، لما شيلنا الـ JWT من /rewards/profile، الـ endpoint لسه شغال. مش معناه إن في
+          vulnerability — معناه إن الـ JWT مش بيتاستخدمش في الـ endpoint ده أصلاً. كنا بنبعت حاجة الـ backend بيتجاهلها.
+        </div>
+        <p>ده بيعلمنا حاجة مهمة: <span class="hl">لازم تثبت إن الـ token ده فعلاً هو اللي الـ backend بيستخدمه</span> —
+          مش بس إنه مش validated.</p>
+      </div>
+    </div>
+    <div class="dt rev" style="margin-top:2rem">
+      <div class="dt-lbl">// MINIMUM REQUEST DECISION TREE</div>
+      <div style="direction:ltr">
+        <div class="dr"><span class="dq dn">ENDPOINT returns your data</span></div>
+        <div class="di">
+          <p
+            style="color:var(--muted);font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.12em;margin:.7rem 0 .4rem">
+            STEP 1 — Remove CSRF token</p>
+          <div class="dr"><span class="darr">→</span><span class="dy dn">Still 200</span><span
+              class="darr">→</span><span class="da dn">📝 POINTER: CSRF not validated</span></div>
+          <p
+            style="color:var(--muted);font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.12em;margin:.7rem 0 .4rem">
+            STEP 2 — Remove JWT access_token</p>
+          <div class="dr"><span class="darr">→</span><span class="dy dn">Still 200</span><span
+              class="darr">→</span><span class="da dn">JWT not used here → check session</span></div>
+          <div class="dr"><span class="darr">→</span><span class="dn-no dn">401</span><span class="darr">→</span><span
+              class="da dn">⚡ JWT IS the mechanism → analyze it</span></div>
+          <p
+            style="color:var(--muted);font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.12em;margin:.7rem 0 .4rem">
+            STEP 3 — Remove session cookie</p>
+          <div class="dr"><span class="darr">→</span><span class="dn-no dn">302 → login</span><span
+              class="darr">→</span><span class="da dn">✅ Session = authentication</span></div>
+          <p
+            style="color:var(--muted);font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.12em;margin:.7rem 0 .4rem">
+            STEP 4 — Any explicit ID in URL or body?</p>
+          <div class="dr"><span class="darr">→</span><span class="dy dn">YES (cardNumber, userId...)</span><span
+              class="darr">→</span><span class="dw dn">🎯 Swap with A2's value</span></div>
+          <div class="dr"><span class="darr">→</span><span class="dn-no dn">NO — only session</span><span
+              class="darr">→</span><span class="da dn">Fuzz for hidden params</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S6 -->
+<section class="section" id="s6">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 06 — تحليل التوكن</div>
+      <h2 class="sec-title">فهم الـ <em>JWT</em> صح</h2>
+      <p class="sec-desc">الـ JWT مش magic — base64 + signature. لو الـ signature مش validated، إنت تقدر تغير أي حاجة
+        جوا.</p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="g2 rev">
+      <div class="cb">
+        <span class="cb-lbl">// JWT ANATOMY + TEST</span>
+        <span class="t">eyJhbGciOiJIUzI1NiJ9</span><span class="m">.</span>
+        <span class="g">eyJuYW1lSWQiOiI4ODAwMzI3In0</span><span class="m">.</span>
+        <span class="y">oQzJxR4Fshort...</span>
+
+        <span class="m">─────────────────────────────</span>
+        <span class="t">HEADER :</span> {"alg": "<span class="r">HS256</span>", "typ": "JWT"}
+        <span class="g">PAYLOAD:</span> {"nameId": "8800327",
+        "sub": "8800327"}
+        <span class="y">SIG :</span> HMACSHA256(h+"."+p, <span class="r">SECRET</span>)
+
+        <span class="m">─── VALIDATION TEST ──────────</span>
+        Remove last sig char → send
+        <span class="g">Still 200?</span> → <span class="r">Not validated → CHANGE PAYLOAD!</span>
+        <span class="r">Got 401?</span> → Validated → JWT attacks
+      </div>
+      <div>
+        <div class="card cr" style="margin-bottom:1.4rem">
+          <div class="clabel r">⚠️ HS256 = Symmetric = سؤال مهم</div>
+          <h3 style="font-size:1.05rem">ليه مش RS256؟</h3>
+          <p style="font-size:.87rem">HS256 بيستخدم <strong style="color:var(--cream)">shared secret واحد</strong>. أقل
+            شيوعاً من RS256. لو شايفه — ده pointer ممكن يكون legacy implementation.</p>
+        </div>
+        <div class="dt">
+          <div class="dt-lbl">// JWT ATTACK TREE</div>
+          <div style="direction:ltr;font-size:.78rem">
+            <div class="dr"><span class="dq dn">Signature validated?</span></div>
+            <div class="di">
+              <div class="dr"><span class="dy dn">NO</span><span class="darr">→</span><span class="da dn">Change nameId
+                  → IDOR ✅</span></div>
+              <div class="dr"><span class="dn-no dn">YES + HS256</span><span class="darr">→</span><span
+                  class="da dn">Try alg:none</span></div>
+              <div class="dr"><span class="dn-no dn">YES + HS256</span><span class="darr">→</span><span
+                  class="da dn">Brute force weak secret</span></div>
+              <div class="dr"><span class="dn-no dn">YES + RS256</span><span class="darr">→</span><span
+                  class="da dn">Look for other vectors</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S7 -->
+<section class="section" id="s7">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 07 — قراءة الإشارات</div>
+      <h2 class="sec-title">نظام <em>الـ Pointers</em></h2>
+      <p class="sec-desc">الـ Pointer مش vulnerability — هو إشارة إن الـ team مش بيطبق best practices.</p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="g2 rev" style="margin-bottom:2rem">
+      <div class="card cg">
+        <div class="clabel">إيه هو الـ Pointer؟</div>
+        <p style="margin-bottom:1rem">أي حاجة في الـ application بتقولك إن الـ security team مش على المستوى. بتدلك إنك
+          على الطريق الصح.</p>
+        <div class="nb" style="font-size:.87rem">"If you find misconfigurations like this, you're almost certainly going
+          to have deeper systemic issues." — Arson</div>
+      </div>
+      <div class="card ct">
+        <div class="clabel t">الـ Story في Starbucks</div>
+        <ul class="cl">
+          <li>CSRF token موجود بس مش validated</li>
+          <li>Session cookie بدون HTTP-only flag</li>
+          <li>JWT بيستخدم HS256 مش RS256</li>
+          <li>اتنين auth patterns مختلفين في نفس الـ app</li>
+        </ul>
+        <p
+          style="margin-top:1rem;color:var(--gold-dim);font-family:'EB Garamond',serif;font-style:italic;font-size:.95rem">
+          = فريق بيشتغل تحت ضغط + technical debt كبير</p>
+      </div>
+    </div>
+    <div class="rev" style="overflow-x:auto">
+      <table class="dt2">
+        <thead>
+          <tr>
+            <th>الـ Pointer</th>
+            <th>إيه اللي بيعنيه</th>
+            <th>الخطوة التالية</th>
+            <th>الأولوية</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSRF token غير validated</td>
+            <td>Developer أضافه بس ما ربطهوش</td>
+            <td>تحقق من كل endpoints</td>
+            <td><span class="pb">MEDIUM</span></td>
+          </tr>
+          <tr>
+            <td>Session cookie بدون HTTP-only</td>
+            <td>قابل للسرقة بـ XSS</td>
+            <td>دور على XSS → session hijack chain</td>
+            <td><span class="pb r">HIGH</span></td>
+          </tr>
+          <tr>
+            <td>JWT بيستخدم HS256</td>
+            <td>قرار غريب — legacy ممكن</td>
+            <td>اختبر validation، جرب none algorithm</td>
+            <td><span class="pb r">HIGH</span></td>
+          </tr>
+          <tr>
+            <td>Auth patterns مختلفة في نفس الـ app</td>
+            <td>Tech debt — كودبيسين اتلموا</td>
+            <td>API endpoints ممكن تكون أقل حماية</td>
+            <td><span class="pb r">HIGH</span></td>
+          </tr>
+          <tr>
+            <td>Generic error message</td>
+            <td>Dev بيخبي فرق بين not found وunauthorized</td>
+            <td>قارن response time وsize → Blind IDOR</td>
+            <td><span class="pb t">MEDIUM</span></td>
+          </tr>
+          <tr>
+            <td>Sequential IDs في الـ JWT</td>
+            <td>Predictable — مش GUIDs</td>
+            <td>أعلى أولوية على كل endpoint</td>
+            <td><span class="pb r">CRITICAL</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- S8 -->
+<section class="section" id="s8">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 08 — رسم خريطة التطبيق</div>
+      <h2 class="sec-title"><em>CRUD</em> Mapping</h2>
+      <p class="sec-desc">قبل ما تهاجم حاجة، إنت لازم تفهم التطبيق كاملاً. الـ CRUD map هو طريقتك.</p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="rev" style="overflow-x:auto;margin-bottom:2rem">
+      <table class="dt2">
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th>HTTP</th>
+            <th>IDOR Type</th>
+            <th>Impact</th>
+            <th>مثال</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="direction:ltr">
+            <td style="color:var(--gold-dim);font-family:'Cinzel',serif;font-size:.72rem">READ</td>
+            <td><span class="ic">GET / POST</span></td>
+            <td>Unauthorized data access</td>
+            <td><span class="pb r">HIGH</span></td>
+            <td style="color:var(--muted);font-size:.8rem">شوف profile / cards حد تاني</td>
+          </tr>
+          <tr style="direction:ltr">
+            <td style="color:#c8b070;font-family:'Cinzel',serif;font-size:.72rem">UPDATE</td>
+            <td><span class="ic">POST / PUT</span></td>
+            <td>Unauthorized modification</td>
+            <td><span class="pb r">CRITICAL</span></td>
+            <td style="color:var(--muted);font-size:.8rem">غيّر email / role حد تاني</td>
+          </tr>
+          <tr style="direction:ltr">
+            <td style="color:#c06a5a;font-family:'Cinzel',serif;font-size:.72rem">DELETE</td>
+            <td><span class="ic">DELETE</span></td>
+            <td>Unauthorized deletion</td>
+            <td><span class="pb r">CRITICAL</span></td>
+            <td style="color:var(--muted);font-size:.8rem">امسح account حد تاني</td>
+          </tr>
+          <tr style="direction:ltr">
+            <td style="color:#8a7ab8;font-family:'Cinzel',serif;font-size:.72rem">CREATE</td>
+            <td><span class="ic">POST</span></td>
+            <td>Resource under other user</td>
+            <td><span class="pb t">MEDIUM</span></td>
+            <td style="color:var(--muted);font-size:.8rem">أضف order لـ account حد تاني</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- S9 -->
+<section class="section" id="s9">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 09 — الـ Data Model</div>
+      <h2 class="sec-title">اكتشاف <em>الـ Objects</em></h2>
+      <p class="sec-desc">كل IDOR bug بيتمحور حول object معين. كل ما عرفته أكتر، كل ما قدرت تثبت الـ impact أحسن.</p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="g2 rev">
+      <div>
+        <div class="card cg" style="margin-bottom:1.4rem">
+          <div class="clabel">فين بتلاقي الـ Objects؟</div>
+          <ul class="cl">
+            <li><span class="tg">API responses</span> أحسن مصدر — JSON كامل وواضح</li>
+            <li><span class="tg t">React DevTools</span> component state = data model كامل</li>
+            <li><span class="tg">JS files</span> بعض الـ apps بتخلي الـ objects في الـ JS</li>
+            <li><span class="tg r">Error messages</span> verbose errors بتكشف field names</li>
+          </ul>
+        </div>
+        <div class="card ct">
+          <div class="clabel t">الـ Object بيساعدك إزاي؟</div>
+          <p style="font-size:.9rem">لما تعرف الـ fields بتاعة الـ Gift Card — إنت عارف بالظبط إيه الـ sensitive data
+            اللي تعرضه كـ proof of concept.</p>
+          <p style="margin-top:.7rem;color:var(--gold-dim);font-family:'EB Garamond',serif;font-style:italic">balance +
+            cardNumber = maximum impact proof.</p>
+        </div>
+      </div>
+      <div class="cb">
+        <span class="cb-lbl">// GIFT CARD OBJECT — DISCOVERED VIA API</span>
+        POST /rewards/api/giftcard/getCardsByAccount
+        {
+        <span class="t">"cards"</span>: [{
+        <span class="g">"cardId"</span>: <span class="y">"gc_8a7f3b..."</span>,
+        <span class="g">"cardNumber"</span>: <span class="y">"6350949..."</span>, <span class="r">← THE IDOR KEY</span>
+        <span class="g">"balance"</span>: <span class="w">25.00</span>,
+        <span class="g">"currency"</span>: <span class="y">"SGD"</span>,
+        <span class="g">"status"</span>: <span class="y">"active"</span>,
+        <span class="g">"autoReload"</span>: <span class="w">false</span>
+        }]
+        }
+
+        <span class="m">─── IDOR TEST ────────────────────────</span>
+        Take <span class="g">cardNumber</span> from Account2
+        Send from Account1's session
+        <span class="r">Returns Account2's card data?</span>
+        <span class="g">→ IDOR CONFIRMED ✅</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S10 -->
+<section class="section" id="s10">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 10 — خرائط القرار</div>
+      <h2 class="sec-title">الـ <em>Decision Trees</em> الكاملة</h2>
+      <p class="sec-desc">كل قرار في الـ IDOR testing ليه مساره المحدد.</p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="dt rev" style="margin-bottom:2rem">
+      <div class="dt-lbl">// MASTER IDOR HUNTING TREE</div>
+      <div style="direction:ltr;overflow-x:auto">
+        <div class="dr"><span style="color:var(--gold-dim);font-family:'Cormorant Garamond',serif">◆</span><span
+            class="dq dn">Endpoint returns data — start here</span></div>
+        <div class="di">
+          <p
+            style="color:var(--muted);font-family:'Cinzel',serif;font-size:.53rem;letter-spacing:.13em;margin:.9rem 0 .4rem">
+            PHASE 1 — AUTH MECHANISM</p>
+          <div class="dr"><span class="darr">→</span><span class="dq dn">Remove JWT</span><span class="dy dn">Still
+              200</span><span class="darr">→</span><span class="da dn">JWT not used → check session</span></div>
+          <div class="dr"><span class="darr">→</span><span class="dq dn">Remove JWT</span><span
+              class="dn-no dn">401</span><span class="darr">→</span><span class="da dn">JWT = auth mechanism → JWT
+              branch</span></div>
+          <div class="dr"><span class="darr">→</span><span class="dq dn">Remove session</span><span
+              class="dn-no dn">302</span><span class="darr">→</span><span class="da dn">Session = auth → session
+              branch</span></div>
+          <div style="display:flex;gap:1.8rem;flex-wrap:wrap;margin-top:1rem">
+            <div style="border:1px solid rgba(201,160,99,.13);padding:.9rem;min-width:200px">
+              <p
+                style="color:var(--gold-dim);font-family:'Cinzel',serif;font-size:.53rem;letter-spacing:.1em;margin-bottom:.7rem">
+                SESSION BRANCH</p>
+              <div class="dr"><span class="dq dn">ID in body/URL?</span></div>
+              <div class="dr"><span class="dy dn">YES</span><span class="darr">→</span><span class="da dn">Swap with
+                  A2's ID</span></div>
+              <div class="dr"><span class="dn-no dn">NO</span><span class="darr">→</span><span class="da dn">Fuzz hidden
+                  params</span></div>
+              <div class="dr"><span class="dq dn">Email in body?</span></div>
+              <div class="dr"><span class="dy dn">YES</span><span class="darr">→</span><span class="da dn">Try A2's
+                  email</span></div>
+            </div>
+            <div style="border:1px solid rgba(74,138,122,.13);padding:.9rem;min-width:200px">
+              <p
+                style="color:var(--teal);font-family:'Cinzel',serif;font-size:.53rem;letter-spacing:.1em;margin-bottom:.7rem;opacity:.7">
+                JWT BRANCH</p>
+              <div class="dr"><span class="dq dn">Shorten signature</span></div>
+              <div class="dr"><span class="dy dn">Still works</span><span class="darr">→</span><span class="da dn">🎯
+                  Change ID in payload!</span></div>
+              <div class="dr"><span class="dn-no dn">401</span><span class="darr">→</span><span
+                  class="dw dn">Validated</span></div>
+              <div class="dr"><span class="dq dn">HS256?</span><span class="darr">→</span><span class="da dn">alg:none
+                  or brute force</span></div>
+            </div>
+          </div>
+          <p
+            style="color:var(--muted);font-family:'Cinzel',serif;font-size:.53rem;letter-spacing:.13em;margin:.9rem 0 .4rem">
+            PHASE 2 — ID TYPE</p>
+          <div class="dr"><span class="dy dn">Sequential int</span><span class="darr">→</span><span class="da dn">🔥
+              Enumerate directly</span></div>
+          <div class="dr"><span class="dw dn">Email / Username</span><span class="darr">→</span><span class="da dn">Put
+              A2's email in body</span></div>
+          <div class="dr"><span class="dn-no dn">GUID / Hash</span><span class="darr">→</span><span class="da dn">Find
+              leakage in other endpoints</span></div>
+          <p
+            style="color:var(--muted);font-family:'Cinzel',serif;font-size:.53rem;letter-spacing:.13em;margin:.9rem 0 .4rem">
+            PHASE 3 — CONFIRMATION</p>
+          <div class="dr"><span class="dy dn">Got A2's data from A1 session</span><span class="darr">→</span><span
+              class="da dn">🏆 CONFIRMED — document & report</span></div>
+          <div class="dr"><span class="dw dn">Generic error</span><span class="darr">→</span><span class="da dn">Compare
+              timing/size → Blind IDOR</span></div>
+          <div class="dr"><span class="dn-no dn">403 Forbidden</span><span class="darr">→</span><span
+              class="da dn">Validated correctly — next endpoint</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="dt rev">
+      <div class="dt-lbl">// BLIND IDOR DETECTION</div>
+      <div style="direction:ltr;font-size:.8rem">
+        <p style="color:var(--text);font-family:'EB Garamond',serif;font-style:italic;margin-bottom:1rem">الـ Blind IDOR
+          = مش بتشوف الـ data مباشرة بس في إشارة إن الـ object موجود.</p>
+        <div class="dr"><span class="dq dn">Send random invalid ID</span><span class="darr">→</span><span
+            class="dn-no dn">"Not found" / 404</span></div>
+        <div class="dr"><span class="dq dn">Send valid A2 ID</span><span class="darr">→</span><span
+            class="dy dn">Different error OR timing</span><span class="darr">→</span><span class="da dn">⚡ Blind IDOR
+            confirmed!</span></div>
+        <div class="dr"><span class="dq dn">Send valid A2 ID</span><span class="darr">→</span><span class="dw dn">Same
+            error BUT different size</span><span class="darr">→</span><span class="da dn">Blind IDOR possible</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S11 -->
+<section class="section" id="s11">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 11 — التطبيق العملي</div>
+      <h2 class="sec-title">لو بدأت على <em>target النهارده</em></h2>
+      <p class="sec-desc">Step by step — من لحظة ما تفتح الـ program لحد ما تكتب الـ report.</p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="steps rev">
+      <div class="step">
+        <div class="sn">I</div>
+        <div class="sc">
+          <h4>اختر الـ Target بالمعايير</h4>
+          <p>Authenticated testing ✅ Self-registration ✅ Surface كبيرة ✅ Non-English bonus ✅. افتح scope وشوف كل الـ
+            subdomains.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="sn">II</div>
+        <div class="sc">
+          <h4>ابدأ الـ Note File</h4>
+          <p><span class="ic">mkdir target && touch idor_notes.md</span>. اكتب: ## Pointers → ## Accounts → ##
+            Mechanisms → ## Objects. ثابت على كل target.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="sn">III</div>
+        <div class="sc">
+          <h4>حسابين + Plus Notation</h4>
+          <p>A1 في normal browser، A2 في incognito. Burp Suite scope = target domain فقط. Wappalyzer لتحديد الـ tech
+            stack.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="sn">IV</div>
+        <div class="sc">
+          <h4>افتح الـ JWTs وقارن</h4>
+          <p>كل account: Burp → jwt.io → وثق كل identifier. Sequential IDs = gold. GUIDs = هتحتاج تلاقيهم من مصادر
+            تانية.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="sn">V</div>
+        <div class="sc">
+          <h4>Map الـ CRUD Mechanisms</h4>
+          <p>Feature inventory كامل. كل section فيه READ/UPDATE/DELETE. Apply الـ minimum request theory على كل
+            endpoint.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="sn">VI</div>
+        <div class="sc">
+          <h4>IDOR Testing بالأولوية</h4>
+          <p>أولوية: endpoints اللي فيها explicit ID في الـ body أو URL. بعت ID بتاع A2 من session بتاع A1 وشوف الـ
+            response.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="sn">VII</div>
+        <div class="sc">
+          <h4>Step Away بعد كل اكتشاف</h4>
+          <p>جد. ابعد عن الـ computer. اتنفس. اتأكد إنك فاهم بالظبط إيه اللي بيحصل قبل ما تكتب report. التسرع = false
+            positives محرجة.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S12 -->
+<section class="section" id="s12">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 12 — الملخص</div>
+      <h2 class="sec-title">Key Techniques <em>Cheatsheet</em></h2>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+    <div class="g2 rev" style="margin-bottom:1.5rem">
+      <div class="card cg">
+        <div class="clabel">Auth Mechanism Discovery</div>
+        <ul class="cl">
+          <li>Remove JWT → 200 = JWT not used here</li>
+          <li>Remove JWT → 401 = JWT is the mechanism</li>
+          <li>Remove session → 302 = Session is auth</li>
+          <li>Remove CSRF → 200 = Not validated <span class="tg">POINTER</span></li>
+          <li>Check HTTP-only flag on cookies <span class="tg">POINTER</span></li>
+        </ul>
+      </div>
+      <div class="card ct">
+        <div class="clabel t">JWT Testing</div>
+        <ul class="cl">
+          <li>Shorten signature → 200 = Not validated → change payload</li>
+          <li>alg:none attack → remove signature entirely</li>
+          <li>HS256 + weak secret → hashcat brute force</li>
+          <li>RS256 → not worth JWT attacks alone</li>
+          <li>Confirm payload ID is actually used to fetch data</li>
+        </ul>
+      </div>
+    </div>
+    <div class="g2 rev" style="margin-bottom:1.5rem">
+      <div class="card cd">
+        <div class="clabel">IDOR Vectors</div>
+        <ul class="cl">
+          <li>Sequential integer in URL → enumerate directly</li>
+          <li>ID in request body → swap with A2's ID</li>
+          <li>Email as identifier in body → try A2's email</li>
+          <li>cardNumber / orderNumber → swap between accounts</li>
+          <li>Fuzz for hidden params if no visible ID</li>
+        </ul>
+      </div>
+      <div class="card cr">
+        <div class="clabel r">Pattern Recognition</div>
+        <ul class="cl">
+          <li>API endpoints + JWT → higher IDOR chance</li>
+          <li>Two auth patterns in same app = tech debt = bugs</li>
+          <li>Generic errors → investigate Blind IDOR</li>
+          <li>Sequential IDs + no validation = jackpot</li>
+          <li>Non-English version = less competition</li>
+        </ul>
+      </div>
+    </div>
+    <div class="cb rev">
+      <span class="cb-lbl">// BURP REPEATER CHECKLIST — لكل endpoint جديد</span>
+      <span class="g">[ ] 1.</span> <span class="w">Send to Repeater</span>
+      <span class="t">[ ] 2.</span> <span class="w">Remove CSRF token → still works? → POINTER logged</span>
+      <span class="t">[ ] 3.</span> <span class="w">Remove JWT → 200 or 401? → note the auth mechanism</span>
+      <span class="t">[ ] 4.</span> <span class="w">Remove session cookie → redirects? → confirm session = auth</span>
+      <span class="y">[ ] 5.</span> <span class="w">Any ID in URL/body/JWT payload? → log in ## Mechanisms</span>
+      <span class="y">[ ] 6.</span> <span class="w">Is the ID sequential? → log comparison with A2</span>
+      <span class="g">[ ] 7.</span> <span class="w">Send A2's ID from A1's session → check response</span>
+      <span class="g">[ ] 8.</span> <span class="w">JWT used: shorten signature → still works? → change payload</span>
+      <span class="r">[ ] 9.</span> <span class="w">Log ALL pointers before moving to next endpoint</span>
+      <span class="r">[ ] 10.</span> <span class="w">Step away if you find something — breathe first</span>
+    </div>
+  </div>
+</section>
+
+<!-- S13 -->
+<section class="section" id="s13">
+  <div class="container">
+    <div class="rev">
+      <div class="sec-eye">// 13 — اختبر نفسك</div>
+      <h2 class="sec-title"><em>Quiz</em> — منهجية مش حفظ</h2>
+      <p class="sec-desc">كل سؤال عن decision-making حقيقي.</p>
+    </div>
+    <div class="ornament">◆ ◇ ◆</div>
+
+    <div class="qc rev" id="q1">
+      <div class="qq">بتعمل IDOR testing على endpoint بتاع profile. لما شيلت الـ JWT access_token، الـ endpoint لسه شغال
+        ورجع 200. إيه اللي المفروض تستنتجه؟</div>
+      <div class="qos">
+        <div class="qo" data-v="A"><span class="ql">A.</span> الـ JWT signature مش validated — في IDOR عن طريق JWT
+          manipulation</div>
+        <div class="qo" data-v="B"><span class="ql">B.</span> الـ JWT مش بيتاستخدمش في الـ endpoint ده — الـ auth
+          mechanism حاجة تانية</div>
+        <div class="qo" data-v="C"><span class="ql">C.</span> في vulnerability — ابعت report فوراً</div>
+        <div class="qo" data-v="D"><span class="ql">D.</span> الـ application كلها غير محمية</div>
+      </div>
+      <div class="qe" id="q1-e"><strong>الإجابة الصح: B</strong><br><br>لما شيل JWT ولسه الـ endpoint شغال — ده معناه إن
+        الـ endpoint ده مش بيستخدم الـ JWT أصلاً. مش vulnerability. ده اللي حصل مع Starbucks بالظبط. الـ auth الحقيقي
+        كان الـ session cookie — مش الـ JWT.</div>
+    </div>
+
+    <div class="qc rev" id="q2">
+      <div class="qq">في الـ JWT payload عندك nameId: "8800327". Account2 عنده nameId: "8800329". اختصرت الـ signature
+        وبعثت — لسه شغال. إيه خطوتك الجاية؟</div>
+      <div class="qos">
+        <div class="qo" data-v="A"><span class="ql">A.</span> ابعت report — JWT signature مش validated = vulnerability
+        </div>
+        <div class="qo" data-v="B"><span class="ql">B.</span> جرب HS256 brute force على السيكريت</div>
+        <div class="qo" data-v="C"><span class="ql">C.</span> غير الـ nameId لـ "8800329" في الـ payload وشوف لو رجع
+          data بتاع A2</div>
+        <div class="qo" data-v="D"><span class="ql">D.</span> الفرق 2 بس — مش كفاية للـ IDOR</div>
+      </div>
+      <div class="qe" id="q2-e"><strong>الإجابة الصح: C</strong><br><br>لما الـ signature مش validated، ده بيديك فرصة
+        تغير أي قيمة في الـ payload. غير الـ nameId لـ ID بتاع A2 وتأكد إن الـ data اللي رجعت هي بيانات A2 فعلاً. ده هو
+        الـ confirmation الحقيقي للـ IDOR.</div>
+    </div>
+
+    <div class="qc rev" id="q3">
+      <div class="qq">بعثت cardNumber بتاع A2 من session بتاع A1. رجع: 400 Bad Request — "Invalid Starbucks card
+        details". إيه أصح تفسير؟</div>
+      <div class="qos">
+        <div class="qo" data-v="A"><span class="ql">A.</span> التطبيق بيتحقق من الـ ownership وبيرجع generic error —
+          Blind IDOR محتمل</div>
+        <div class="qo" data-v="B"><span class="ql">B.</span> الـ card number مش موجود في الـ database أصلاً</div>
+        <div class="qo" data-v="C"><span class="ql">C.</span> التطبيق محمي تماماً — move on</div>
+        <div class="qo" data-v="D"><span class="ql">D.</span> الـ JWT access token هو اللي بيمنعنا</div>
+      </div>
+      <div class="qe" id="q3-e"><strong>الإجابة الصح: A</strong><br><br>الـ generic error "Invalid card details" مش
+        بيقولك "not found". ممكن يكون الـ card موجود بس الـ app بيرجع نفس الـ error لـ "unauthorized" و"not found" عشان
+        ما يكشفش إن الـ object موجود. قارن response time وsize بين card حقيقي ومش حقيقي.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="gline"></div>
+  <p>HAMADA KHAIRY ACADEMY · IDOR METHODOLOGY · BUG BOUNTY</p>
+  <p style="margin-top:.5rem;font-size:.5rem;opacity:.35">USE THIS TEMPLATE ON EVERY TARGET</p>
+  <div class="gline"></div>
+</footer>
+
+<script>
+  // REVEAL
+  const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }), { threshold: .08 });
+  document.querySelectorAll('.rev').forEach(r => obs.observe(r));
+
+  // NAV ACTIVE
+  const secEls = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const navObs = new IntersectionObserver(es => {
+    es.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+        if (a) { a.classList.add('active'); a.scrollIntoView({ block: 'nearest', inline: 'center' }); }
+      }
+    });
+  }, { threshold: .3 });
+  secEls.forEach(s => navObs.observe(s));
+
+  // QUIZ
+  const ANS = { q1: 'B', q2: 'C', q3: 'A' };
+  document.querySelectorAll('.qc').forEach(card => {
+    const id = card.id;
+    const correct = ANS[id];
+    card.querySelectorAll('.qo').forEach(opt => {
+      opt.addEventListener('click', function () {
+        if (card.querySelector('.correct')) return;
+        card.querySelectorAll('.qo').forEach(o => { if (o.dataset.v === correct) o.classList.add('correct'); });
+        if (this.dataset.v !== correct) this.classList.add('wrong');
+        const expEl = document.getElementById(id + '-e');
+        if (expEl) expEl.classList.add('show');
+      });
+    });
+  });
+</script>
+
+<!-- BLACK SITE SCRIPTS -->
+<script>
+  /* ═══ CURSOR ═══ */
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function animCursor() {
+    rx += (mx - rx) * 0.18;
+    ry += (my - ry) * 0.18;
+    if (dot) { dot.style.left = mx + 'px'; dot.style.top = my + 'px'; }
+    if (ring) { ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; }
+    requestAnimationFrame(animCursor);
+  })();
+
+  /* ═══ HEX CANVAS ═══ */
+  (function () {
+    const canvas = document.getElementById('hexCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, hexes = [];
+    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; buildHexes(); }
+    function buildHexes() {
+      hexes = [];
+      const size = 40, xStep = size * 1.75, yStep = size * 1.52;
+      for (let row = -1; row * yStep < h + yStep; row++) {
+        for (let col = -1; col * xStep < w + xStep; col++) {
+          const x = col * xStep + (row % 2 ? xStep * 0.5 : 0);
+          const y = row * yStep;
+          hexes.push({ x, y, size, phase: Math.random() * Math.PI * 2, speed: 0.001 + Math.random() * 0.002 });
+        }
+      }
+    }
+    function drawHex(x, y, s, alpha) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i - Math.PI / 6;
+        const px = x + s * Math.cos(a), py = y + s * Math.sin(a);
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = `rgba(201,160,99,${alpha})`;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+    let t = 0;
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      t += 0.005;
+      hexes.forEach(h => {
+        const a = (Math.sin(t * h.speed * 200 + h.phase) + 1) * 0.5;
+        const alpha = a * 0.04 + 0.01;
+        drawHex(h.x, h.y, h.size, alpha);
+      });
+      requestAnimationFrame(draw);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    draw();
+  })();
+</script>
+</body>
+
+</html>

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hamada Khairy — Discord Live Archives</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;700&family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;700;900&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050608;
+      --bg2: #0a0c10;
+      --bg3: #0f1218;
+      --bg4: #151922;
+      --border: rgba(88, 101, 242, 0.15);
+      --border2: rgba(88, 101, 242, 0.07);
+      --discord: #5865F2;
+      --discord2: #7289da;
+      --ddim: rgba(88, 101, 242, 0.3);
+      --cream: #e0e5f5;
+      --text: #a0aabf;
+      --muted: #5a6b8c;
+      --muted2: #2d3648;
+      --white: #f5f7fa;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      font-size: 24px;
+      scroll-behavior: smooth
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Tajawal', sans-serif;
+      font-size: 15px;
+      line-height: 1.8;
+      direction: rtl;
+      overflow-x: hidden
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: .5
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(5, 6, 8, .95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem
+    }
+
+    .brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: .95rem;
+      color: var(--cream);
+      letter-spacing: .02em
+    }
+
+    .brand em {
+      color: var(--discord);
+      font-style: italic
+    }
+
+    .progress-text {
+      font-family: 'Cinzel', serif;
+      font-size: .58rem;
+      letter-spacing: .15em;
+      color: var(--muted)
+    }
+
+    .progress-text span {
+      color: var(--discord)
+    }
+
+    /* ── MAIN ── */
+    .main {
+      padding: 1.5rem 2rem 4rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      margin-top: 52px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 1rem 0 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border2);
+      margin-bottom: 2rem
+    }
+
+    .hero-eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: .58rem;
+      letter-spacing: .3em;
+      color: var(--muted);
+      margin-bottom: 1rem
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      color: var(--white);
+      line-height: 1.1
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--discord)
+    }
+
+    .hero-desc {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 600px;
+      margin: .8rem auto 0
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      margin-top: 2rem;
+      flex-wrap: wrap
+    }
+
+    .stat {
+      text-align: center
+    }
+
+    .stat-n {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      color: var(--discord);
+      font-weight: 300
+    }
+
+    .stat-l {
+      font-family: 'Cinzel', serif;
+      font-size: .53rem;
+      letter-spacing: .15em;
+      color: var(--muted)
+    }
+
+    /* ── VIDEO GRID ── */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .video-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      transition: all .25s;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .video-card:hover {
+      border-color: rgba(88, 101, 242, .3);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+      transform: translateY(-2px)
+    }
+
+    .video-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--discord), transparent);
+      opacity: 0;
+      transition: opacity .3s
+    }
+
+    .video-card:hover::before {
+      opacity: 1
+    }
+
+    .vc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .vc-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      color: var(--cream);
+      font-weight: 600
+    }
+
+    .vc-badge {
+      font-family: 'Cinzel', serif;
+      font-size: .5rem;
+      letter-spacing: .1em;
+      color: var(--discord);
+      background: rgba(88, 101, 242, .08);
+      border: 1px solid rgba(88, 101, 242, .2);
+      padding: .2rem .5rem
+    }
+
+    .iframe-container {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+    }
+
+    .iframe-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .vc-desc {
+      font-size: .85rem;
+      color: var(--muted);
+      line-height: 1.6
+    }
+
+    .vc-link {
+      display: inline-block;
+      margin-top: .5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      color: var(--discord);
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(88, 101, 242, 0.5);
+      transition: all .2s;
+      width: fit-content;
+    }
+
+    .vc-link:hover {
+      border-bottom-style: solid;
+      color: var(--discord2);
+    }
+
+    /* BLACK SITE INJECTIONS */
+    body { cursor: none !important; }
+    .cursor-dot { position: fixed; width: 6px; height: 6px; background: var(--discord); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); transition: transform 0.1s; box-shadow: 0 0 10px var(--discord); }
+    .cursor-ring { position: fixed; width: 32px; height: 32px; border: 1px solid rgba(88, 101, 242, 0.5); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%, -50%); transition: transform 0.25s cubic-bezier(.23, 1, .32, 1), width 0.2s, height 0.2s, border-color 0.2s; }
+    body:has(a:hover) .cursor-ring, body:has(button:hover) .cursor-ring, body:has(.vc-link:hover) .cursor-ring { width: 48px; height: 48px; border-color: var(--discord); }
+    
+    /* SCANLINE SWEEP */
+    .scanline { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(88, 101, 242, 0.15), transparent); animation: scan 8s linear infinite; z-index: 9996; pointer-events: none; }
+    @keyframes scan { 0% { top: -2px; opacity: 0; } 5% { opacity: 1; } 95% { opacity: 0.3; } 100% { top: 100vh; opacity: 0; } }
+    
+    /* HEX GRID BACKGROUND */
+    .hex-bg { position: fixed; inset: 0; z-index: 0; background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(88, 101, 242, 0.04) 0%, transparent 60%); overflow: hidden; pointer-events: none; }
+    .hex-bg canvas { position: absolute; inset: 0; opacity: 0.6; pointer-events: none; }
+    
+    .main, .topbar, .hero { position: relative; z-index: 10; }
+  </style>
+</head>
+
+<body>
+  <!-- BLACK SITE INJECTIONS -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="scanline"></div>
+  <div class="hex-bg"><canvas id="hexCanvas"></canvas></div>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">Hamada Khairy <em>Archives</em></div>
+    <div class="progress-wrap">
+      <div class="progress-text">DISCORD LIVES: <span id="recordCount">4</span></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="hero">
+      <div class="hero-eyebrow">HAMADA KHAIRY ACADEMY · LIVE TRAINING ARCHIVES</div>
+      <h1 class="hero-title">Discord <em>Live</em> Sessions</h1>
+      <p class="hero-desc">Exclusive recorded sessions. Real-time debugging, methodology teardowns, and deep dives into vulnerabilities.</p>
+      
+      <div class="char-wrap" style="position: relative; width: 360px; height: 360px; margin: 1.5rem auto 1.5rem; display: flex; align-items: center; justify-content: center;">
+        <div style="position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(88, 101, 242, .12); box-shadow: 0 0 60px rgba(88, 101, 242, .05), inset 0 0 60px rgba(88, 101, 242, .03);"></div>
+        <div style="position: absolute; inset: 15px; border-radius: 50%; border: 1px solid rgba(88, 101, 242, .06);"></div>
+        <img src="FastFetch-Hamada.png" alt="Hamada Khairy" style="width: 320px; height: auto; position: relative; z-index: 2; filter: drop-shadow(0 20px 60px rgba(0, 0, 0, .85)); transform: translateY(-15px);">
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-n">4</div>
+          <div class="stat-l">RECORDED SESSIONS</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">HQ</div>
+          <div class="stat-l">YOUTUBE VODS</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">∞</div>
+          <div class="stat-l">KNOWLEDGE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIDEO GRID -->
+    <div class="video-grid">
+      
+      <!-- Video 1 -->
+      <div class="video-card">
+        <div class="vc-header">
+          <div class="vc-title">Session 01</div>
+          <div class="vc-badge">ARCHIVED</div>
+        </div>
+        <a href="https://youtu.be/6vou1SImGvk" target="_blank" class="iframe-container" style="display: block; text-decoration: none;">
+          <img src="https://img.youtube.com/vi/6vou1SImGvk/maxresdefault.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border: none; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8" alt="Video Thumbnail">
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 40px; background: rgba(88, 101, 242, 0.9); border-radius: 10px; display: flex; align-items: center; justify-content: center; pointer-events: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            <div style="width: 0; height: 0; border-style: solid; border-width: 10px 0 10px 16px; border-color: transparent transparent transparent #fff;"></div>
+          </div>
+        </a>
+        <div class="vc-desc">تسجيل جلسة الديسكورد الأولى. مناقشة المنهجيات والتعمق في أساسيات اكتشاف الثغرات.</div>
+        <a href="https://youtu.be/6vou1SImGvk" target="_blank" class="vc-link">Watch on YouTube ↗</a>
+      </div>
+
+      <!-- Video 2 -->
+      <div class="video-card">
+        <div class="vc-header">
+          <div class="vc-title">Session 02</div>
+          <div class="vc-badge">ARCHIVED</div>
+        </div>
+        <a href="https://youtu.be/lYY8iyl3cNM" target="_blank" class="iframe-container" style="display: block; text-decoration: none;">
+          <img src="https://img.youtube.com/vi/lYY8iyl3cNM/maxresdefault.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border: none; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8" alt="Video Thumbnail">
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 40px; background: rgba(88, 101, 242, 0.9); border-radius: 10px; display: flex; align-items: center; justify-content: center; pointer-events: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            <div style="width: 0; height: 0; border-style: solid; border-width: 10px 0 10px 16px; border-color: transparent transparent transparent #fff;"></div>
+          </div>
+        </a>
+        <div class="vc-desc">تسجيل جلسة الديسكورد الثانية. تحليل ثغرات حقيقية وخطوات استغلالها خطوة بخطوة.</div>
+        <a href="https://youtu.be/lYY8iyl3cNM" target="_blank" class="vc-link">Watch on YouTube ↗</a>
+      </div>
+
+      <!-- Video 3 -->
+      <div class="video-card">
+        <div class="vc-header">
+          <div class="vc-title">Session 03</div>
+          <div class="vc-badge">ARCHIVED</div>
+        </div>
+        <a href="https://youtu.be/Dihvq7MOoKQ" target="_blank" class="iframe-container" style="display: block; text-decoration: none;">
+          <img src="https://img.youtube.com/vi/Dihvq7MOoKQ/maxresdefault.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border: none; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8" alt="Video Thumbnail">
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 40px; background: rgba(88, 101, 242, 0.9); border-radius: 10px; display: flex; align-items: center; justify-content: center; pointer-events: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            <div style="width: 0; height: 0; border-style: solid; border-width: 10px 0 10px 16px; border-color: transparent transparent transparent #fff;"></div>
+          </div>
+        </a>
+        <div class="vc-desc">تسجيل جلسة الديسكورد الثالثة. تفكيك تطبيقات الويب وكيفية بناء Custom Payloads.</div>
+        <a href="https://youtu.be/Dihvq7MOoKQ" target="_blank" class="vc-link">Watch on YouTube ↗</a>
+      </div>
+
+      <!-- Video 4 -->
+      <div class="video-card">
+        <div class="vc-header">
+          <div class="vc-title">Session 04</div>
+          <div class="vc-badge">ARCHIVED</div>
+        </div>
+        <a href="https://youtu.be/KftDin6A4_o" target="_blank" class="iframe-container" style="display: block; text-decoration: none;">
+          <img src="https://img.youtube.com/vi/KftDin6A4_o/maxresdefault.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border: none; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8" alt="Video Thumbnail">
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 40px; background: rgba(88, 101, 242, 0.9); border-radius: 10px; display: flex; align-items: center; justify-content: center; pointer-events: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            <div style="width: 0; height: 0; border-style: solid; border-width: 10px 0 10px 16px; border-color: transparent transparent transparent #fff;"></div>
+          </div>
+        </a>
+        <div class="vc-desc">تسجيل جلسة الديسكورد الرابعة. مراجعة شاملة وتطبيق عملي متقدم لثغرات مختلفة.</div>
+        <a href="https://youtu.be/KftDin6A4_o" target="_blank" class="vc-link">Watch on YouTube ↗</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Cursor Tracking
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    document.addEventListener('mousemove', e => {
+      dot.style.left = e.clientX + 'px';
+      dot.style.top = e.clientY + 'px';
+      ring.style.left = e.clientX + 'px';
+      ring.style.top = e.clientY + 'px';
+    });
+
+    // Hex Background
+    (function () {
+      const canvas = document.getElementById('hexCanvas');
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      let hexes = [];
+      const size = 30;
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+        init();
+      }
+      function init() {
+        hexes = [];
+        const cols = Math.ceil(w / (size * 1.5)) + 1;
+        const rows = Math.ceil(h / (size * Math.sqrt(3))) + 1;
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const x = c * size * 1.5;
+            const y = r * size * Math.sqrt(3) + (c % 2 === 1 ? size * Math.sqrt(3) / 2 : 0);
+            hexes.push({ x, y, phase: Math.random() * Math.PI * 2, speed: Math.random() * 0.01 + 0.005, size: size * 0.95 });
+          }
+        }
+      }
+      function drawHex(x, y, s, alpha) {
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const angle = i * Math.PI / 3;
+          const px = x + s * Math.cos(angle);
+          const py = y + s * Math.sin(angle);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = `rgba(88, 101, 242, ${alpha})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+      let t = 0;
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        t += 0.005;
+        hexes.forEach(h => {
+          const a = (Math.sin(t * h.speed * 200 + h.phase) + 1) * 0.5;
+          const alpha = a * 0.04 + 0.01;
+          drawHex(h.x, h.y, h.size, alpha);
+        });
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+      draw();
+    })();
+  </script>
+</body>
+
+</html>
