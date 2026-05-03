@@ -2,14 +2,17 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=Hamada_Academy_Dashboard.html">
-  <script type="text/javascript">
-    window.location.href = "Hamada_Academy_Dashboard.html";
-  </script>
-  <title>Hamada Khairy — Redirecting to Dashboard...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hamada Khairy — Bug Bounty Training Sandbox</title>
   <style>
+    :root {
+      --bg: #0b0906;
+      --border: rgba(180, 140, 70, 0.25);
+      --gold: #c9a063;
+      --text: #b8a890;
+    }
     body {
-      background-color: #0b0906;
+      background-color: var(--bg);
       color: #e8dcc8;
       font-family: 'Tajawal', sans-serif;
       display: flex;
@@ -20,17 +23,60 @@
       text-align: center;
       direction: rtl;
     }
-    a {
-      color: #c9a063;
-      text-decoration: none;
+    .welcome-container {
+      background: #120e09;
+      border: 1px solid var(--border);
+      padding: 3rem 2rem;
+      border-radius: 4px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    }
+    .title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.8rem;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.05em;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--gold);
+      color: #0b0906;
+      font-size: 1rem;
       font-weight: bold;
+      padding: 0.85rem 2rem;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      box-shadow: 0 4px 15px rgba(201, 160, 99, 0.2);
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn:hover {
+      background: #e2bc7a;
+      transform: translateY(-2px);
+    }
+    .disclaimer {
+      font-size: 0.7rem;
+      color: #6b5a45;
+      margin-top: 1.5rem;
+      line-height: 1.4;
     }
   </style>
 </head>
 <body>
-  <div>
-    <h2>جاري تحويلك إلى لوحة التحكم...</h2>
-    <p>إذا لم يتم تحويلك تلقائياً، يمكنك الانتقال يدوياً عبر <a href="Hamada_Academy_Dashboard.html">الضغط هنا</a>.</p>
+  <div class="welcome-container">
+    <div class="title">HAMADA KHAIRY</div>
+    <div class="subtitle">أهلاً بك في الأكاديمية التعليمية المخصصة للتدريب الأمني. اضغط على الزر أدناه للدخول للوحة التحكم.</div>
+    <a href="Hamada_Academy_Dashboard.html" class="btn">دخول لوحة التحكم ←</a>
+    <div class="disclaimer">هذا الموقع مخصص للأغراض التعليمية والتدريب على الـ Bug Bounty فقط.</div>
   </div>
 </body>
 </html>
