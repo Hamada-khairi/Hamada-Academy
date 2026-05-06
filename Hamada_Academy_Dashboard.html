@@ -748,6 +748,11 @@
             --c-rgb: 224, 48, 80;
         }
 
+        .t-oauth {
+            --c-accent: #22d3ee;
+            --c-rgb: 34, 211, 238;
+        }
+
         /* PHASE BADGE */
         .phase-badge {
             display: inline-flex;
@@ -1256,7 +1261,7 @@
         <div class="section-head reveal d1">
             <div class="sh-label">CURRICULUM OVERVIEW</div>
             <div class="sh-line"></div>
-            <div class="sh-num" id="moduleCount">05 MODULES</div>
+            <div class="sh-num" id="moduleCount">06 MODULES</div>
         </div>
 
         <div class="phase-timeline-h reveal d2">
@@ -1298,6 +1303,16 @@
                     <span
                         style="width:6px;height:6px;border-radius:50%;background:var(--crimson);display:inline-block;flex-shrink:0"></span>
                     <span id="jwt-ph-txt">LOCKED</span>
+                </div>
+            </div>
+            <div class="pth-item" style="--c-accent2: #22d3ee;">
+                <div class="pth-num">3</div>
+                <div class="pth-phase">PHASE 3 · AUTHN</div>
+                <div class="pth-title">OAuth <em>2.0</em></div>
+                <div class="pth-status" style="color: #22d3ee;" id="oauth-status">
+                    <span
+                        style="width:6px;height:6px;border-radius:50%;background:#22d3ee;display:inline-block;flex-shrink:0"></span>
+                    <span id="oauth-ph-txt">LOCKED</span>
                 </div>
             </div>
             <div class="pth-item" style="--c-accent2: #5865F2;">
@@ -1518,6 +1533,74 @@
                                     style="width:4px;height:4px;background:var(--crimson);border-radius:50%;flex-shrink:0;box-shadow:0 0 6px var(--crimson)"></span>
                                 <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate)">Weak
                                     secret brute-force (hashcat)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OAUTH -->
+            <div class="track-card t-oauth wide reveal d6">
+                <div class="sweep"></div>
+                <div class="scan-hover"></div>
+                <div class="card-inner-br"></div>
+
+                <div class="card-body">
+                    <div>
+                        <div class="phase-badge">
+                            <div class="phase-pip"></div>
+                            <div class="phase-txt">PHASE 3 · AUTHN</div>
+                        </div>
+                        <div class="card-title">OAuth <em>2.0 / 2.1</em></div>
+                        <div class="card-code">// AUTHORIZATION FLOWS · TOKEN HIJACKING · REDIRECT BYPASS · OIDC</div>
+                        <p class="card-desc">اختراق الـ OAuth flows، تجاوز الـ redirect_uri، سرقة الـ tokens، هجمات الـ CSRF على الـ state parameter، وثغرات الـ PKCE. من الـ Implicit bypass وحتى الـ Dirty Dancing.</p>
+
+                        <div class="prog-wrap">
+                            <div class="prog-header">
+                                <span>METHODOLOGY PROGRESS</span>
+                                <span class="prog-count" id="oauth-lbl">21 TOPICS</span>
+                            </div>
+                            <div class="prog-segs">
+                                <div class="prog-seg filled"></div>
+                                <div class="prog-seg filled"></div>
+                                <div class="prog-seg filled"></div>
+                                <div class="prog-seg filled"></div>
+                                <div class="prog-seg"></div>
+                                <div class="prog-seg"></div>
+                            </div>
+                            <div class="xp-line">
+                                <span class="xp-label">STATUS</span>
+                                <span class="xp-val" id="oauth-xp">METHODOLOGY READY</span>
+                            </div>
+                        </div>
+
+                        <div class="card-actions">
+                            <a href="Hamada_oauth_Methodology.html" class="btn btn-primary">METHODOLOGY →</a>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;justify-content:center;gap:1.5rem">
+                        <div style="font-family:var(--font-mono);font-size:0.5rem;letter-spacing:0.15em;color:var(--muted)">ATTACK VECTORS</div>
+                        <div style="display:flex;flex-direction:column;gap:0.8rem">
+                            <div style="display:flex;align-items:center;gap:0.8rem">
+                                <span style="width:4px;height:4px;background:#22d3ee;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px #22d3ee"></span>
+                                <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate)">OAuth authentication bypass (Implicit)</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.8rem">
+                                <span style="width:4px;height:4px;background:#22d3ee;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px #22d3ee"></span>
+                                <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate)">CSRF via missing state parameter</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.8rem">
+                                <span style="width:4px;height:4px;background:#22d3ee;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px #22d3ee"></span>
+                                <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate)">redirect_uri bypass &amp; open redirect chain</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.8rem">
+                                <span style="width:4px;height:4px;background:#22d3ee;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px #22d3ee"></span>
+                                <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate)">Pre-account takeover &amp; scope upgrade</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.8rem">
+                                <span style="width:4px;height:4px;background:#22d3ee;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px #22d3ee"></span>
+                                <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--slate)">Dirty Dancing &amp; OIDC misconfigurations</span>
                             </div>
                         </div>
                     </div>
